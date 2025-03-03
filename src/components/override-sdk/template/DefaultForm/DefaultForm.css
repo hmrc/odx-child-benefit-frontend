@@ -1,0 +1,74 @@
+/***** CSS styles specific to default form hooks                   *****/
+/***** added through extended Pega properties                      *****/
+/***** 1. u-gdsSummaryCard - used on child summary screen          *****/
+/***** 2. u-childRemove - used on the confirm child removal screen *****/
+
+/* FORM HOOK - u-gdsSummaryCard */
+.u-gdsSummaryCard .govuk-form-group fieldset {
+  display: none;
+}
+.u-gdsSummaryCard .govuk-form-group {
+  display: none;
+}
+
+.u-gdsSummaryCard .govuk-form-group fieldset {
+  display: none;
+}
+
+.u-gdsSummaryCard .MuiGrid-container {
+  counter-reset: item-counter;
+}
+
+.u-gdsSummaryCard .MuiGrid-item {
+  counter-increment: item-counter;
+}
+
+.u-gdsSummaryCard .MuiGrid-item h2.govuk-summary-card__title:after {
+  content: counter(item-counter);
+  margin-left: 8px;
+}
+
+.u-gdsSummaryCard .MuiGrid-item b {
+  display: none;
+}
+
+.u-gdsSummaryCard .MuiGrid-item br {
+  display: none;
+}
+
+/* FORM HOOK - u-childRemove */
+
+.u-childRemove {
+  font-size: 1.1875rem;
+}
+
+.u-childRemove .govuk-main-wrapper {
+  padding-top: 0;
+}
+
+.u-childRemove + .govuk-button-group button:not(.govuk-button--secondary) {
+  background-color: #d4351c;
+  box-shadow: 0 2px 0 #55150b;
+}
+
+.u-childRemove + .govuk-button-group button:not(.govuk-button--secondary):hover {
+  background-color: #aa2a16;
+}
+
+.u-childRemove .govuk-summary-list__row {
+  display: block;
+  font-family: 'GDS Transport', 'Roboto', 'Helvetica', 'Arial', 'sans-serif';
+}
+
+.u-childRemove .MuiTypography-body2 {
+  font-size: 1rem;
+}
+
+.u-childRemove .govuk-grid-column-two-thirds {
+  max-width: 630px;
+  width: 100%;
+}
+
+.u-childRemove .govuk-summary-list__key {
+  width: 210px;
+}

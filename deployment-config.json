@@ -1,0 +1,109 @@
+{
+  "Service": {
+    "Subpath": "/child-benefit/make_a_claim",
+    "Build_Command": "npm run build:prod:ci",
+    "Lint_Command": "npm run pipeline:lint"
+  },
+  "CHB-DEV": {
+    "Environment": {
+      "Type": "static-ec2",
+      "Routing": "external",
+      "Suffix": "/chb-dev/"
+    },
+    "Infrastructure": {
+      "EC2_Type": "c5a.large",
+      "EC2_Minimum_Hosts": "1",
+      "EC2_Maximum_Hosts": "1"
+    },
+    "Build": {
+      "SDK_Path": "sdk-configs/ChbDev.json",
+      "sdkContentServerUrl": "https://account-np.hmrc.gov.uk/child-benefit/make_a_claim/chb-dev/",
+      "Version": "1.6.17"
+    }
+  },
+  "Development": {
+    "Environment": {
+      "Type": "static-ec2",
+      "Routing": "external",
+      "Suffix": "/dev/"
+    },
+    "Infrastructure": {
+      "EC2_Type": "c5a.large",
+      "EC2_Minimum_Hosts": "1",
+      "EC2_Maximum_Hosts": "1"
+    },
+    "Build": {
+      "SDK_Path": "sdk-configs/DEV.json",
+      "sdkContentServerUrl": "https://account-np.hmrc.gov.uk/child-benefit/make_a_claim/dev/",
+      "Version": "1.6.17"
+    }
+  },
+  "Staging": {
+    "Environment": {
+      "Type": "static-ec2",
+      "Routing": "external",
+      "Suffix": "/test/"
+    },
+    "Infrastructure": {
+      "EC2_Type": "c5a.large",
+      "EC2_Minimum_Hosts": "1",
+      "EC2_Maximum_Hosts": "1"
+    },
+    "Build": {
+      "SDK_Path": "sdk-configs/Test.json",
+      "sdkContentServerUrl": "https://account-np.hmrc.gov.uk/child-benefit/make_a_claim/test/",
+      "Version": "1.6.17"
+    }
+  },
+  "Sandbox": {
+    "Environment": {
+      "Type": "static-ec2",
+      "Routing": "external",
+      "Suffix": "/sandbox/"
+    },
+    "Infrastructure": {
+      "EC2_Type": "c5a.large",
+      "EC2_Minimum_Hosts": "1",
+      "EC2_Maximum_Hosts": "1"
+    },
+    "Build": {
+      "SDK_Path": "sdk-configs/Sandbox.json",
+      "sdkContentServerUrl": "https://account-np.hmrc.gov.uk/child-benefit/make_a_claim/sandbox/",
+      "Version": "1.5.8"
+    }
+  },
+  "Preproduction": {
+    "Environment": {
+      "Type": "hpha-ec2",
+      "Routing": "external",
+      "Suffix": "/preprod/"
+    },
+    "Infrastructure": {
+      "EC2_Type": "c5a.large",
+      "EC2_Minimum_Hosts": "1",
+      "EC2_Maximum_Hosts": "1"
+    },
+    "Build": {
+      "SDK_Path": "sdk-configs/Preproduction.json",
+      "sdkContentServerUrl": "https://account.hmrc.gov.uk/child-benefit/make_a_claim/preprod/",
+      "Version": "1.6.0"
+    }
+  },
+  "Production": {
+    "Environment": {
+      "Type": "hpha-ec2",
+      "Routing": "external",
+      "Suffix": "/"
+    },
+    "Infrastructure": {
+      "EC2_Type": "c5a.large",
+      "EC2_Minimum_Hosts": "1",
+      "EC2_Maximum_Hosts": "4"
+    },
+    "Build": {
+      "SDK_Path": "sdk-configs/Production.json",
+      "sdkContentServerUrl": "https://account.hmrc.gov.uk/child-benefit/make_a_claim/",
+      "Version": "1.6.0"
+    }
+  }
+}
