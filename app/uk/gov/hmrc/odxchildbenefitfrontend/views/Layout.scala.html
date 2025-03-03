@@ -1,0 +1,21 @@
+@import uk.gov.hmrc.odxchildbenefitfrontend.config.AppConfig
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcStandardPage
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.HmrcStandardPageParams
+
+@this(
+  appConfig: AppConfig,
+  hmrcStandardPage: HmrcStandardPage
+)
+
+@(pageTitle: Option[String] = None)(contentBlock: Html)(implicit request: RequestHeader, messages: Messages)
+
+@hmrcStandardPage(
+  HmrcStandardPageParams(
+    pageTitle = pageTitle,
+    isWelshTranslationAvailable = appConfig.welshLanguageSupportEnabled
+  )
+)(contentBlock)
+
+@{
+    //$COVERAGE-OFF$
+}
