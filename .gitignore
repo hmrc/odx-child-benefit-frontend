@@ -94,6 +94,9 @@ package-lock.json
 .npmrc
 .gitlab-ci.*
 
+# Removal of unused pega files from default SDK
+docs/
+
 # test output directories (jest, playwright)
 test-results/
 tests/coverage
