@@ -89,13 +89,14 @@ keys/
 scripts/
 sdk-config/
 sdk-configs/
-sdk-config.json
+*-config.json
 package-lock.json
 .npmrc
 .gitlab-ci.*
 
 # Removal of unused pega files from default SDK
 docs/
+USAGE.md
 
 # test output directories (jest, playwright)
 test-results/
