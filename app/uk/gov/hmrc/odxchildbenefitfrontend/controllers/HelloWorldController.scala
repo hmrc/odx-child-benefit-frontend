@@ -14,7 +14,7 @@ class HelloWorldController @Inject()(
 
   val helloWorld: Action[AnyContent] = Action.async { implicit request =>
     Future.successful(Ok(helloWorldPage()))
-    // Some comment to test a commit - attempt 2
+    // Some comment to test a commit - attempt 3
   }
 
 }
