@@ -1,0 +1,20 @@
+{
+    "componentKey": "DefaultForm",
+    "name": "DefaultForm",
+    "label": "Default form",
+    "description": "DefaultForm Template",
+    "type": "Template",
+    "subtype": "FORM",
+    "properties": [
+        {
+            "format": "BOOLEAN",
+            "name": "hidePageLabel",
+            "label": "Single Question page?"
+        },
+        {
+            "name": "cssClassHook",
+            "label": "CSS class hook",
+            "format": "TEXT"
+        }
+    ]
+}

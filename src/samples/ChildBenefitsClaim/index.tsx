@@ -1,0 +1,759 @@
+// @ts-nocheck - TypeScript type checking to be added soon
+import React, { useState, useEffect } from 'react';
+import { render } from 'react-dom';
+import { useHistory } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import StoreContext from '@pega/react-sdk-components/lib/bridge/Context/StoreContext';
+import createPConnectComponent from '@pega/react-sdk-components/lib/bridge/react_pconnect';
+
+import {
+  sdkIsLoggedIn,
+  loginIfNecessary,
+  sdkSetAuthHeader,
+  getSdkConfig
+} from '@pega/auth/lib/sdk-auth-manager';
+
+import { compareSdkPCoreVersions } from '@pega/react-sdk-components/lib/components/helpers/versionHelpers';
+import AppHeader from '../../components/AppComponents/AppHeader';
+import AppFooter from '../../components/AppComponents/AppFooter';
+import LogoutPopup from '../../components/AppComponents/LogoutPopup';
+
+import StartPage from './StartPage';
+import ConfirmationPage from './ConfirmationPage';
+import UserPortal from './UserPortal';
+import ClaimsList from '../../components/templates/ClaimsList';
+import setPageTitle, { registerServiceName } from '../../components/helpers/setPageTitleHelpers';
+import TimeoutPopup from '../../components/AppComponents/TimeoutPopup';
+import ServiceNotAvailable from '../../components/AppComponents/ServiceNotAvailable';
+
+import { getSdkComponentMap } from '@pega/react-sdk-components/lib/bridge/helpers/sdk_component_map';
+import localSdkComponentMap from '../../../sdk-local-component-map';
+import ShutterServicePage from '../../components/AppComponents/ShutterService/ShutterServicePage';
+import { getServiceShutteredStatus, triggerLogout } from '../../components/helpers/utils';
+import { TIMEOUT_115_SECONDS, TIMEOUT_13_MINUTES } from '../../components/helpers/constants';
+import checkAuthAndRedirectIfTens from '../../components/helpers/checkAuthAndRedirectIfTens';
+import C11nEnv from '@pega/pcore-pconnect-typedefs/interpreter/c11n-env';
+import languageToggle from '../../components/helpers/languageToggleHelper';
+import { loadBundles } from '../../components/helpers/languageToggleHelper';
+import { addDeviceIdCookie } from '../../components/helpers/cookie';
+
+declare const myLoadMashup: any;
+declare const PCore: any;
+
+/* Time out modal functionality */
+let applicationTimeout = null;
+// Sets default timeouts (13 mins for warning, 115 seconds for sign out after warning shows)
+let millisecondsTillSignout = TIMEOUT_115_SECONDS;
+let millisecondsTillWarning = TIMEOUT_13_MINUTES;
+
+// Clears any existing timeouts and starts the timeout for warning, after set time shows the modal and starts signout timer
+function initTimeout(setShowTimeoutModal) {
+  clearTimeout(applicationTimeout);
+
+  applicationTimeout = setTimeout(() => {
+    setShowTimeoutModal(true);
+  }, millisecondsTillWarning);
+}
+
+// Sends 'ping' to pega to keep session alive and then initiates the timout
+function staySignedIn(setShowTimeoutModal, refreshSignin = true) {
+  if (refreshSignin) {
+    PCore.getDataPageUtils().getDataAsync('D_ClaimantWorkAssignmentChBCases', 'root');
+  }
+  setShowTimeoutModal(false);
+  initTimeout(setShowTimeoutModal);
+}
+/* ******************************* */
+
+export default function ChildBenefitsClaim() {
+  const [pConn, setPConn] = useState<C11nEnv>(null);
+  const [bShowPega, setShowPega] = useState(false);
+  const [showStartPage, setShowStartPage] = useState(false);
+  const [showUserPortal, setShowUserPortal] = useState(false);
+  const [bShowAppName, setShowAppName] = useState(false);
+  const [bShowResolutionScreen, setShowResolutionScreen] = useState(false);
+  const [loadingsubmittedClaims, setLoadingSubmittedClaims] = useState(true);
+  const [loadinginProgressClaims, setLoadingInProgressClaims] = useState(true);
+  const [showSignoutModal, setShowSignoutModal] = useState(false);
+  const [showTimeoutModal, setShowTimeoutModal] = useState(false);
+  const [serviceNotAvailable, setServiceNotAvailable] = useState(false);
+  const [shutterServicePage, setShutterServicePage] = useState(false);
+  const [caseId, setCaseId] = useState('');
+  const [showPortalBanner, setShowPortalBanner] = useState(false);
+  const [assignmentPConn, setAssignmentPConn] = useState(null);
+  const [isCreateCaseBlocked, setIsCreateCaseBlocked] = useState(false);
+  const [rootProps, setRootProps] = useState({});
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    window.addEventListener('APP_LANGUAGE_TOGGLE', e =>
+      languageToggle(e.detail.language, i18n, ['HMRC-CHB-WORK-CLAIM!CASE!CLAIM'])
+    );
+    return () => {
+      window.removeEventListener('APP_LANGUAGE_TOGGLE', e =>
+        languageToggle(e.detail.language, i18n, ['HMRC-CHB-WORK-CLAIM!CASE!CLAIM'])
+      );
+    };
+  }, []);
+
+  const history = useHistory();
+
+  function resetAppDisplay() {
+    setShowStartPage(false);
+    setShowUserPortal(false);
+    setShowResolutionScreen(false);
+    setShowPega(false);
+  }
+
+  function displayPega() {
+    const pegaElem = document.getElementById('pega-part-of-page');
+    pegaElem.style.display = 'block';
+    resetAppDisplay();
+    setShowPega(true);
+  }
+
+  function displayUserPortal() {
+    resetAppDisplay();
+    setShowUserPortal(true);
+  }
+
+  function displayStartPage() {
+    resetAppDisplay();
+    setShowStartPage(true);
+  }
+
+  function displayServiceNotAvailable() {
+    setServiceNotAvailable(true);
+  }
+
+  function displayResolutionScreen() {
+    resetAppDisplay();
+    setShowResolutionScreen(true);
+  }
+
+  const { t } = useTranslation();
+  let operatorId = '';
+  const serviceName = t('CLAIM_CHILD_BENEFIT');
+  registerServiceName(serviceName);
+
+  useEffect(() => {
+    setPageTitle();
+  }, [
+    showStartPage,
+    showUserPortal,
+    bShowPega,
+    bShowResolutionScreen,
+    shutterServicePage,
+    serviceName
+  ]);
+
+  // Reset the page title if user clicks the backbutton
+  useEffect(() => {
+    const handlePopState = () => {
+      setPageTitle();
+    };
+
+    // Listen for popstate (back button) events to ensure the title stays consistent
+    window.addEventListener('popstate', handlePopState);
+
+    // Clean up the event listener on unmount
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
+  const [inprogressClaims, setInprogressClaims] = useState([]);
+  const [submittedClaims, setSubmittedClaims] = useState([]);
+  const [beginNewClaimButtonForSubmittedClaims, setBeginNewClaimButtonForSubmittedClaims] =
+    useState(false);
+  const [beginNewClaimButtonForInProgressClaims, setBeginNewClaimButtonForInProgressClaims] =
+    useState(false);
+
+  function doRedirectDone() {
+    history.replace('/');
+    // appName and mainRedirect params have to be same as earlier invocation
+    loginIfNecessary({
+      appName: 'ChB',
+      mainRedirect: true
+    });
+  }
+  useEffect(() => {
+    if (submittedClaims[0]?.HideBeginClaimSubmitted === true) {
+      setBeginNewClaimButtonForSubmittedClaims(true);
+    } else {
+      setBeginNewClaimButtonForSubmittedClaims(false);
+    }
+  }, [submittedClaims]);
+
+  useEffect(() => {
+    if (inprogressClaims[0]?.HideBeginClaimInProgress === true) {
+      setBeginNewClaimButtonForInProgressClaims(true);
+    } else {
+      setBeginNewClaimButtonForInProgressClaims(false);
+    }
+  }, [inprogressClaims]);
+
+  function createCase() {
+    displayPega();
+
+    let startingFields = {};
+    startingFields = {
+      NotificationLanguage: sessionStorage.getItem('rsdk_locale')?.slice(0, 2) || 'en'
+    };
+    PCore.getMashupApi().createCase('HMRC-ChB-Work-Claim', PCore.getConstants().APP.APP, {
+      startingFields
+    });
+  }
+
+  function startNow() {
+    // Check if PConn is created, and create case if it is
+    if (pConn) {
+      setIsCreateCaseBlocked(true);
+      createCase();
+      sessionStorage.setItem('assignmentFinishedFlag', 'false');
+    }
+  }
+
+  function beginClaim() {
+    // Added to ensure that clicking begin claim restarts timeout
+    staySignedIn(setShowTimeoutModal);
+    displayStartPage();
+    setIsCreateCaseBlocked(false);
+  }
+  function returnToPortalPage() {
+    staySignedIn(setShowTimeoutModal);
+    setServiceNotAvailable(false);
+
+    displayUserPortal();
+    PCore.getContainerUtils().closeContainerItem(
+      PCore.getContainerUtils().getActiveContainerItemContext('app/primary'),
+      { skipDirtyCheck: true }
+    );
+  }
+  function getClaimsCaseID() {
+    const context = PCore.getContainerUtils().getActiveContainerItemName(
+      `${PCore.getConstants().APP.APP}/primary`
+    );
+    const caseID = PCore.getStoreValue('.ID', 'caseInfo', context);
+    setCaseId(caseID);
+  }
+  function assignmentFinished() {
+    getClaimsCaseID();
+    if (!bShowResolutionScreen) {
+      PCore.getContainerUtils().closeContainerItem(
+        PCore.getContainerUtils().getActiveContainerItemContext('app/primary'),
+        { skipDirtyCheck: true }
+      );
+    }
+    displayResolutionScreen();
+  }
+
+  function closeContainer() {
+    const pegaElem = document.getElementById('pega-part-of-page');
+    if (pegaElem) {
+      pegaElem.style.display = 'none';
+    }
+    displayUserPortal();
+  }
+
+  // Calls data page to fetch in progress claims, then for each result (limited to first 10), calls D_Claim to get extra details about each 'assignment'
+  // to display within the claim 'card' in the list. This then sets inprogress claims state value to the list of claims data.
+  // This funtion also sets 'isloading' value to true before making d_page calls, and sets it back to false after data claimed.
+  function fetchInProgressClaimsData(isSaveComeBackClicked = false) {
+    setLoadingInProgressClaims(true);
+    let inProgressClaimsData: any = [];
+
+    PCore.getDataPageUtils()
+      .getDataAsync('D_ClaimantWorkAssignmentChBCases', 'root')
+      .then(resp => {
+        resp = resp.data.slice(0, 10);
+        inProgressClaimsData = resp;
+        setInprogressClaims(inProgressClaimsData);
+        setLoadingInProgressClaims(false);
+      })
+      .finally(() => {
+        if (isSaveComeBackClicked) {
+          // Here we are calling this close container because of the fact that above
+          // D_ClaimantWorkAssignmentChBCases API is getting excuted as last call but we want to make
+          // close container call as the very last one.
+          PCore.getContainerUtils().closeContainerItem(
+            PCore.getContainerUtils().getActiveContainerItemContext('app/primary'),
+            { skipDirtyCheck: true }
+          );
+        }
+      });
+  }
+
+  function cancelAssignment() {
+    //  Here we are passing true as argument for below function because we will close container
+    //  based on whether claimant has clicked save and come back later link.
+    fetchInProgressClaimsData(true);
+    getClaimsCaseID();
+    displayUserPortal();
+  }
+
+  async function setShutterStatus() {
+    try {
+      const status = await getServiceShutteredStatus();
+      setShutterServicePage(status);
+
+      if (status) {
+        resetAppDisplay();
+        // Ensure assignmentPConn isn't populated to keep the user portal hidden during assignment.
+      } else if (!status && assignmentPConn !== null) {
+        displayUserPortal();
+      }
+    } catch (error) {
+      // Handle error appropriately, e.g., log it or show a notification
+      console.error('Error setting shutter status:', error); // eslint-disable-line
+    }
+  }
+
+  // Function to force re-render the pega Root component
+  const forceRefreshRootComponent = () => {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    renderRootComponent(rootProps);
+  };
+
+  useEffect(() => {
+    if (Object.keys(rootProps).length) {
+      PCore.getPubSubUtils().subscribe(
+        'forceRefreshRootComponent',
+        forceRefreshRootComponent,
+        'forceRefreshRootComponent'
+      );
+    }
+    return () => {
+      PCore?.getPubSubUtils().unsubscribe('forceRefreshRootComponent', 'forceRefreshRootComponent');
+    };
+  }, [rootProps]);
+
+  function establishPCoreSubscriptions() {
+    PCore.getPubSubUtils().subscribe(
+      PCore.getConstants().PUB_SUB_EVENTS.CASE_EVENTS.END_OF_ASSIGNMENT_PROCESSING,
+      () => {
+        assignmentFinished();
+      },
+      'assignmentFinished'
+    );
+    PCore.getPubSubUtils().subscribe(
+      'assignmentFinishedOnTaskListClicked',
+      () => {
+        setShutterStatus();
+      },
+      'assignmentFinishedOnTaskListClicked'
+    );
+    PCore.getPubSubUtils().subscribe(
+      'assignmentFinished',
+      () => {
+        const assignmentFinishedFlag = sessionStorage.getItem('assignmentFinishedFlag');
+        if (assignmentFinishedFlag !== 'true') {
+          // Temporary workaround to restrict infinite update calls
+          setShowStartPage(false);
+          setShowUserPortal(false);
+          setShowPega(false);
+          const containername = PCore.getContainerUtils().getActiveContainerItemName(
+            `${PCore.getConstants().APP.APP}/primary`
+          );
+          const context = PCore.getContainerUtils().getActiveContainerItemName(
+            `${containername}/workarea`
+          );
+          const status = PCore.getStoreValue('.pyStatusWork', 'caseInfo.content', context);
+          if (status === 'Resolved-Discarded') {
+            displayServiceNotAvailable();
+
+            PCore.getContainerUtils().closeContainerItem(context);
+            //  Temporary workaround to restrict infinite update calls
+            sessionStorage.setItem('assignmentFinishedFlag', 'true');
+            PCore?.getPubSubUtils().unsubscribe(
+              PCore.getConstants().PUB_SUB_EVENTS.CASE_EVENTS.END_OF_ASSIGNMENT_PROCESSING,
+              'assignmentFinished'
+            );
+          }
+        }
+      },
+      'assignmentFinished'
+    );
+
+    PCore.getPubSubUtils().subscribe(
+      PCore.getConstants().PUB_SUB_EVENTS.EVENT_CANCEL,
+      () => {
+        cancelAssignment();
+        setShowPortalBanner(true);
+        setIsCreateCaseBlocked(false);
+      },
+      'cancelAssignment'
+    );
+
+    PCore.getPubSubUtils().subscribe(
+      PCore.getConstants().PUB_SUB_EVENTS.CONTAINER_EVENTS.CLOSE_CONTAINER_ITEM,
+      () => {
+        closeContainer();
+      },
+      'closeContainer'
+    );
+
+    PCore.getPubSubUtils().subscribe(
+      PCore.getConstants().PUB_SUB_EVENTS.CASE_EVENTS.ASSIGNMENT_OPENED,
+      () => {
+        displayPega();
+      },
+      'continueAssignment'
+    );
+
+    PCore.getPubSubUtils().subscribe(
+      PCore.getConstants().PUB_SUB_EVENTS.CASE_EVENTS.CASE_CREATED,
+      () => {
+        displayPega();
+      },
+      'continueCase'
+    );
+
+    PCore.getPubSubUtils().subscribe(
+      PCore.getConstants().PUB_SUB_EVENTS.CASE_EVENTS.CREATE_STAGE_SAVED,
+      () => {
+        cancelAssignment();
+        setShowPortalBanner(true);
+        setIsCreateCaseBlocked(false);
+      },
+      'savedCase'
+    );
+
+    PCore.getPubSubUtils().subscribe(
+      PCore.getConstants().PUB_SUB_EVENTS.CASE_EVENTS.CASE_OPENED,
+      () => {
+        displayPega();
+      },
+      'continueCase'
+    );
+
+    PCore.getPubSubUtils().subscribe(
+      'showPortalScreenOnBackPress',
+      () => {
+        cancelAssignment();
+        setShowPortalBanner(true);
+        setIsCreateCaseBlocked(false);
+      },
+      'showPortalScreenOnBackPress'
+    );
+  }
+
+  useEffect(() => {
+    // Update when bShowAppName changes
+    // If not logged in, we used to prompt for login. Now moved up to TopLevelApp
+    // If logged in, make the Triple Play Options visible
+
+    if (sdkIsLoggedIn()) {
+      setShowUserPortal(true);
+    }
+  }, [bShowAppName]);
+
+  // from react_root.js with some modifications
+  function RootComponent(props) {
+    const PegaConnectObj = createPConnectComponent();
+    const thePConnObj = <PegaConnectObj {...props} />;
+
+    // NOTE: For Embedded mode, we add in displayOnlyFA and isMashup to our React context
+    // so the values are available to any component that may need it.
+    const theComp = (
+      <StoreContext.Provider
+        value={{
+          store: PCore.getStore(),
+          displayOnlyFA: true,
+          isMashup: true,
+          setAssignmentPConnect: setAssignmentPConn
+        }}
+      >
+        {thePConnObj}
+      </StoreContext.Provider>
+    );
+
+    return theComp;
+  }
+
+  /**
+   * Callback from onPCoreReady that's called once the top-level render object
+   * is ready to be rendered
+   * @param inRenderObj the initial, top-level PConnect object to render
+   */
+  function renderRootComponent(inRenderObj) {
+    // loadMashup does its own thing so we don't need to do much/anything here
+    // // modified from react_root.js render
+    const {
+      props,
+      domContainerID = null,
+      componentName,
+      portalTarget,
+      styleSheetTarget
+    } = inRenderObj;
+
+    const thePConn: C11nEnv = props.getPConnect();
+
+    setPConn(thePConn);
+
+    let target: any = null;
+
+    if (domContainerID !== null) {
+      target = document.getElementById(domContainerID);
+    } else if (portalTarget !== null) {
+      target = portalTarget;
+    }
+
+    // Note: RootComponent is just a function (declared below)
+    const Component: any = RootComponent;
+
+    if (componentName) {
+      Component.displayName = componentName;
+    }
+
+    const theComponent = (
+      <Component portalTarget={portalTarget} styleSheetTarget={styleSheetTarget} {...props} />
+    );
+
+    // Initial render of component passed in (which should be a RootContainer)
+    render(<React.Fragment>{theComponent}</React.Fragment>, target);
+  }
+
+  /**
+   * kick off the application's portal that we're trying to serve up
+   */
+
+  async function startMashup() {
+    // NOTE: When loadMashup is complete, this will be called.
+    PCore.onPCoreReady(async renderObj => {
+      if (await checkAuthAndRedirectIfTens()) {
+        return;
+      }
+      // Check that we're seeing the PCore version we expect
+      compareSdkPCoreVersions();
+      establishPCoreSubscriptions();
+      setShowAppName(true);
+
+      // Fetches timeout length config
+      getSdkConfig()
+        .then(sdkConfig => {
+          if (sdkConfig.timeoutConfig.secondsTilWarning)
+            millisecondsTillWarning = sdkConfig.timeoutConfig.secondsTilWarning * 1000;
+          if (sdkConfig.timeoutConfig.secondsTilLogout)
+            millisecondsTillSignout = sdkConfig.timeoutConfig.secondsTilLogout * 1000;
+        })
+        .finally(() => {
+          // Subscribe to any store change to reset timeout counter
+          PCore.getStore().subscribe(() => staySignedIn(setShowTimeoutModal, false));
+          initTimeout(setShowTimeoutModal);
+        });
+
+      PCore.getEnvironmentInfo().setLocale(sessionStorage.getItem('rsdk_locale') || 'en_GB');
+
+      setRootProps(renderObj);
+      renderRootComponent(renderObj);
+
+      operatorId = PCore.getEnvironmentInfo().getOperatorIdentifier();
+
+      await addDeviceIdCookie();
+
+      setLoadingSubmittedClaims(true);
+      // @ts-ignore
+      PCore.getDataPageUtils()
+        .getDataAsync('D_ClaimantSubmittedChBCases', 'root', { OperatorId: operatorId })
+        .then(resp => {
+          setSubmittedClaims(resp.data.slice(0, 10));
+        })
+        .finally(() => setLoadingSubmittedClaims(false));
+      fetchInProgressClaimsData();
+    });
+
+    // Initialize the SdkComponentMap (local and pega-provided)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+    getSdkComponentMap(localSdkComponentMap).then((theComponentMap: any) => {
+      // eslint-disable-next-line no-console
+      console.log(`SdkComponentMap initialized`);
+    });
+
+    setShutterStatus();
+
+    // load the Mashup and handle the onPCoreEntry response that establishes the
+    //  top level Pega root element (likely a RootContainer)
+
+    myLoadMashup('pega-root', false); // this is defined in bootstrap shell that's been loaded already
+
+    // Preloading bundles for language toggle
+    await loadBundles(sessionStorage.getItem('rsdk_locale') || 'en_GB');
+  }
+
+  // One time (initialization) subscriptions and related unsubscribe
+
+  useEffect(() => {
+    getSdkConfig().then(sdkConfig => {
+      const sdkConfigAuth = sdkConfig.authConfig;
+      if (!sdkConfigAuth.mashupClientId && sdkConfigAuth.customAuthType === 'Basic') {
+        // Service package to use custom auth with Basic
+        const sB64 = window.btoa(
+          `${sdkConfigAuth.mashupUserIdentifier}:${window.atob(sdkConfigAuth.mashupPassword)}`
+        );
+        sdkSetAuthHeader(`Basic ${sB64}`);
+      }
+
+      if (!sdkConfigAuth.mashupClientId && sdkConfigAuth.customAuthType === 'BasicTO') {
+        const now = new Date();
+        const expTime = new Date(now.getTime() + 5 * 60 * 1000);
+        let sISOTime = `${expTime.toISOString().split('.')[0]}Z`;
+        const regex = /[-:]/g;
+        sISOTime = sISOTime.replace(regex, '');
+        // Service package to use custom auth with Basic
+        const sB64 = window.btoa(
+          `${sdkConfigAuth.mashupUserIdentifier}:${window.atob(
+            sdkConfigAuth.mashupPassword
+          )}:${sISOTime}`
+        );
+        sdkSetAuthHeader(`Basic ${sB64}`);
+      }
+
+      // Login if needed, without doing an initial main window redirect
+      // set locale at this level too
+      loginIfNecessary({
+        appName: 'ChB',
+        mainRedirect: true,
+        redirectDoneCB: doRedirectDone
+      });
+    });
+
+    document.addEventListener('SdkConstellationReady', () => {
+      startMashup();
+    });
+
+    // Subscriptions can't be done until onPCoreReady.
+    //  So we subscribe there. But unsubscribe when this
+    //  component is unmounted (in function returned from this effect)
+
+    return function cleanupSubscriptions() {
+      document.removeEventListener('SdkConstellationReady', () => {
+        startMashup();
+      });
+      PCore?.getPubSubUtils().unsubscribe(
+        PCore.getConstants().PUB_SUB_EVENTS.EVENT_CANCEL,
+        'cancelAssignment'
+      );
+      PCore?.getPubSubUtils().unsubscribe(
+        PCore.getConstants().PUB_SUB_EVENTS.ASSIGNMENT_OPENED,
+        'continueAssignment'
+      );
+      PCore?.getPubSubUtils().unsubscribe(
+        PCore.getConstants().PUB_SUB_EVENTS.CASE_OPENED,
+        'continueCase'
+      );
+
+      PCore?.getPubSubUtils().unsubscribe('assignmentFinishedOnTaskListClicked');
+      PCore?.getPubSubUtils().unsubscribe('closeContainer');
+      PCore?.getPubSubUtils().unsubscribe(
+        PCore.getConstants().PUB_SUB_EVENTS.CASE_EVENTS.END_OF_ASSIGNMENT_PROCESSING,
+        'assignmentFinished'
+      );
+      PCore?.getPubSubUtils().unsubscribe('showPortalScreenOnBackPress');
+    };
+  }, []);
+
+  function handleSignout() {
+    if (bShowPega) {
+      setShowSignoutModal(true);
+    } else {
+      triggerLogout();
+    }
+  }
+
+  const handleStaySignIn = e => {
+    e.preventDefault();
+    setShowSignoutModal(false);
+    // Extends manual signout popup 'stay signed in' to reset the automatic timeout timer also
+    staySignedIn(setShowTimeoutModal);
+  };
+
+  const checkShuttered = (status: boolean) => {
+    setShutterServicePage(status);
+  };
+
+  const renderContent = () => {
+    return shutterServicePage ? (
+      <ShutterServicePage />
+    ) : (
+      <>
+        <div id='pega-part-of-page'>
+          <div id='pega-root'></div>
+        </div>
+        {showStartPage && (
+          <StartPage
+            onStart={startNow}
+            onBack={displayUserPortal}
+            isStartButtonDisabled={isCreateCaseBlocked}
+          />
+        )}
+        {showUserPortal && (
+          <UserPortal
+            beginClaim={beginClaim}
+            showPortalBanner={showPortalBanner}
+            beginNewClaimButtonForSubmittedClaims={beginNewClaimButtonForSubmittedClaims}
+            beginNewClaimButtonForInProgressClaims={beginNewClaimButtonForInProgressClaims}
+          >
+            {!loadinginProgressClaims && inprogressClaims.length !== 0 && (
+              <ClaimsList
+                thePConn={pConn}
+                data={inprogressClaims}
+                title={t('CLAIMS_IN_PROGRESS')}
+                rowClickAction='OpenAssignment'
+                buttonContent={t('CONTINUE_CLAIM')}
+                caseId={caseId}
+              />
+            )}
+
+            {!loadingsubmittedClaims && submittedClaims.length !== 0 && (
+              <ClaimsList
+                thePConn={pConn}
+                data={submittedClaims}
+                title={t('SUBMITTED_CLAIMS')}
+                rowClickAction='OpenCase'
+                buttonContent={t('VIEW_CLAIM')}
+                checkShuttered={checkShuttered}
+              />
+            )}
+          </UserPortal>
+        )}
+      </>
+    );
+  };
+
+  return (
+    <>
+      <TimeoutPopup
+        show={showTimeoutModal}
+        staySignedinHandler={() => staySignedIn(setShowTimeoutModal)}
+        signoutHandler={() => triggerLogout()}
+        millisecondsTillSignout={millisecondsTillSignout}
+        isAuthorised
+      />
+
+      <AppHeader
+        handleSignout={handleSignout}
+        appname={t('CLAIM_CHILD_BENEFIT')}
+        hasLanguageToggle
+        isPegaApp={bShowPega}
+      />
+      <div className='govuk-width-container'>
+        {serviceNotAvailable ? (
+          <ServiceNotAvailable returnToPortalPage={returnToPortalPage} />
+        ) : (
+          renderContent()
+        )}
+
+        {bShowResolutionScreen && <ConfirmationPage caseId={caseId} isUnAuth={false} />}
+      </div>
+
+      <LogoutPopup
+        show={showSignoutModal && !showTimeoutModal}
+        hideModal={() => setShowSignoutModal(false)}
+        handleSignoutModal={triggerLogout}
+        handleStaySignIn={handleStaySignIn}
+      />
+      <AppFooter />
+    </>
+  );
+}
