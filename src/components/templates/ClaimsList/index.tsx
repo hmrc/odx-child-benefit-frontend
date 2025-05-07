@@ -8,8 +8,17 @@ import WarningText from '../../BaseComponents/WarningText/WarningText';
 
 declare const PCore: any;
 
-export default function ClaimsList(props) {
-  const { thePConn, data, title, rowClickAction, buttonContent, caseId, checkShuttered } = props;
+interface ClaimsListProps {
+  thePConn;
+  data;
+  title;
+  rowClickAction;
+  buttonContent;
+  caseId?;
+  checkShuttered?;
+}
+
+export default function ClaimsList({ thePConn, data, title, rowClickAction, buttonContent, caseId, checkShuttered }: ClaimsListProps) {
   const { t } = useTranslation();
   const docIDForReturnSlip = 'CR0002';
   const locale = PCore.getEnvironmentInfo().locale.replaceAll('-', '_');
@@ -30,6 +39,8 @@ export default function ClaimsList(props) {
       case 'Pending-AwaitingDocumentation':
       case 'Pending-Disallowance':
       case 'Resolved-Disallowance':
+      case 'Pending-RivalInvestigation':
+      case 'Resolved-CompleteRival':
         return { text: t('CLAIM_RECEIVED'), tagColour: 'purple' };
       default:
         return { text: status, tagColour: 'grey' };
@@ -198,7 +209,7 @@ export default function ClaimsList(props) {
                 {claimItem.status.text}
               </strong>
             ) : (
-                <span className='govuk-visually-hidden'>{t('NO_ACTION')}</span>
+              <span className='govuk-visually-hidden'>{t('NO_ACTION')}</span>
             )}
           </dd>
         </div>

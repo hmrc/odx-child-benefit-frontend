@@ -32,8 +32,8 @@ window.PCore.getUserApi = () => {
   };
 };
 
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const baseHmrcOdxGdsTaskList = () => {
-
   const props = {
     label: configProps.label,
     createLabel: configProps.createLabel,
@@ -48,21 +48,29 @@ export const baseHmrcOdxGdsTaskList = () => {
       return {
         getActionsApi: () => {
           return {
-            updateFieldValue: () => {/* nothing */},
-            triggerFieldChange: () => {/* nothing */}
+            updateFieldValue: () => {
+              /* nothing */
+            },
+            triggerFieldChange: () => {
+              /* nothing */
+            }
           };
         },
-        ignoreSuggestion: () => {/* nothing */},
-        acceptSuggestion: () => {/* nothing */},
-        setInheritedProps: () => {/* nothing */},
-        resolveConfigProps: () => {/* nothing */}
+        ignoreSuggestion: () => {
+          /* nothing */
+        },
+        acceptSuggestion: () => {
+          /* nothing */
+        },
+        setInheritedProps: () => {
+          /* nothing */
+        },
+        resolveConfigProps: () => {
+          /* nothing */
+        }
       };
     }
-};
+  };
 
-return (
-    <>
-      <HmrcOdxGdsTaskList {...props} />
-    </>
-  );
+  return <HmrcOdxGdsTaskList {...props} />;
 };

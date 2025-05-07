@@ -1,3 +1,4 @@
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const configProps = {
   value: '',
   label: 'Paragraph Sample',
@@ -11,6 +12,7 @@ export const configProps = {
   displayMode: ''
 };
 
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const fieldMetadata = {
   classID: 'DIXL-MediaCo-Work-NewService',
   type: 'Text',

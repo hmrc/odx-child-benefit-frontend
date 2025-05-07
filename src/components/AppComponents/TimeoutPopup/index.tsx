@@ -1,20 +1,15 @@
 import React, { useEffect, useCallback, useReducer } from 'react';
 import Modal from '../../BaseComponents/Modal/Modal';
 import { useTranslation } from 'react-i18next';
-import ModalWithChildren from './ModalWithChildren';
 import UnAuthTimeoutPopupContent from './UnAuthTimeoutPopupContent';
 import UnAuthTimeoutPopupContentForConfirmationPage from './UnAuthTimeoutPopupContentForConfirmationPage';
 import AuthorisedModal from './AuthorisedModal';
 
 interface TimeoutPopupPropTypes {
   show: boolean;
-  millisecondsTillSignout?: number;
   staySignedinHandler: () => void;
   signoutHandler: () => void;
   isAuthorised: boolean;
-  staySignedInButtonText: string;
-  signoutButtonText: string;
-  children?: any;
   isConfirmationPage?: boolean;
   userTimeoutDelete?: () => void;
 }
@@ -32,15 +27,11 @@ export interface TimeoutState {
 
 export default function TimeoutPopup({
   show,
-  millisecondsTillSignout,
   staySignedinHandler,
   signoutHandler,
   userTimeoutDelete,
   isAuthorised,
-  isConfirmationPage,
-  staySignedInButtonText,
-  signoutButtonText,
-  children
+  isConfirmationPage
 }: TimeoutPopupPropTypes) {
   const staySignedInCallback = useCallback(
     event => {
@@ -56,7 +47,7 @@ export default function TimeoutPopup({
     screenReaderCountdown: ''
   };
 
-  const reducer = (state: TimeoutState, action: Action) => {
+  const reducer = (state: TimeoutState, action: Action): TimeoutState => {
     switch (action.type) {
       case 'START_COUNTDOWN':
         return { ...state, countdownStart: action.payload };
@@ -75,17 +66,16 @@ export default function TimeoutPopup({
     let countdownTimeout;
 
     if (!show) {
+      // first time loading
       dispatch({ type: 'UPDATE_TIME_REMAINING', payload: 60 });
       dispatch({ type: 'UPDATE_SCREEN_READER_COUNTDOWN', payload: '' });
       dispatch({ type: 'START_COUNTDOWN', payload: false });
     } else {
-      const milisecondsTilCountdown = millisecondsTillSignout - 60000;
+      // timeout modal shown. start count down in 55 seconds
+      const BEGIN_COUNTDOWN_IN_SECONDS = 55000;
       countdownTimeout = setTimeout(() => {
         dispatch({ type: 'START_COUNTDOWN', payload: true });
-      }, milisecondsTilCountdown);
-    }
-
-    if (show) {
+      }, BEGIN_COUNTDOWN_IN_SECONDS);
       window.addEventListener('keydown', staySignedInCallback);
     }
 
@@ -160,20 +150,6 @@ export default function TimeoutPopup({
       />
     );
   };
-
-  if (children) {
-    return (
-      <ModalWithChildren
-        show={show}
-        staySignedinHandler={staySignedinHandler}
-        staySignedInButtonText={staySignedInButtonText}
-        signoutHandler={signoutHandler}
-        signoutButtonText={signoutButtonText}
-      >
-        {children}
-      </ModalWithChildren>
-    );
-  }
 
   return (
     <Modal show={show} id='timeout-popup'>

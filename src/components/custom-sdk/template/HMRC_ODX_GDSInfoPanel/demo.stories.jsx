@@ -1,16 +1,16 @@
-import { withKnobs } from "@storybook/addon-knobs";
+import { withKnobs } from '@storybook/addon-knobs';
 
-import HmrcOdxGdsInfoPanel from "./index.tsx";
+import HmrcOdxGdsInfoPanel from './index.tsx';
 
-import operatorDetails, { pyReviewRaw } from "./mock.stories";
+import operatorDetails, { pyReviewRaw } from './mock.stories';
 
 export default {
-  title: "HmrcOdxGdsInfoPanel",
+  title: 'HmrcOdxGdsInfoPanel',
   decorators: [withKnobs],
   component: HmrcOdxGdsInfoPanel,
   parameters: {
-    type: "DetailsRegion",
-  },
+    type: 'DetailsRegion'
+  }
 };
 
 export const BaseYourOrgRequiredDxilDetailsRegion = () => {
@@ -21,31 +21,31 @@ export const BaseYourOrgRequiredDxilDetailsRegion = () => {
   window.PCore.getUserApi = () => {
     return {
       getOperatorDetails: () => {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
           resolve(operatorDetails);
         });
-      },
+      }
     };
   };
 
   window.PCore.getEnvironmentInfo = () => {
     return {
       getUseLocale: () => {
-        return "en-US";
-      },
+        return 'en-US';
+      }
     };
   };
 
   const props = {
-    NumCols: "2",
-    template: "DefaultForm",
+    NumCols: '2',
+    template: 'DefaultForm',
     showHighlightedData: false,
-    label: "Details Region",
+    label: 'Details Region',
     showLabel: true,
     panelHeader: "SDK - We were unable to verify your child's details",
-    panelText: "INFO_UNVERIFIED_CHILD",
-    panelLink: "https://design-system.service.gov.uk/components/notification-banner/",
-    panelType: "1",
+    panelText: 'INFO_UNVERIFIED_CHILD',
+    panelLink: 'https://design-system.service.gov.uk/components/notification-banner/',
+    panelType: '1',
     getPConnect: () => {
       return {
         getChildren: () => {
@@ -62,16 +62,10 @@ export const BaseYourOrgRequiredDxilDetailsRegion = () => {
         },
         resolveConfigProps: () => {
           /* nothing */
-        },
+        }
       };
-    },
+    }
   };
 
-  return (
-    <>
-      <HmrcOdxGdsInfoPanel
-        {...props}
-      ></HmrcOdxGdsInfoPanel>
-    </>
-  );
+  return <HmrcOdxGdsInfoPanel {...props}></HmrcOdxGdsInfoPanel>;
 };

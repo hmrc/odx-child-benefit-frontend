@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import '../../../../assets/css/appStyles.scss';
+// import '../../../../assets/css/appStyles.scss';
 
 export default function NotificationBanner(props) {
   const { content } = props;

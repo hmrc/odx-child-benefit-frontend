@@ -165,11 +165,9 @@ export const BaseHmrcOdxSectionBased = () => {
   });
 
   return (
-    <>
-      <HmrcOdxSectionBased {...props}>
-        <div className='region'>{regionAChildren}</div>
-        <div className='region'>{regionBChildren}</div>
-      </HmrcOdxSectionBased>
-    </>
+    <HmrcOdxSectionBased {...props}>
+      <div className='region'>{regionAChildren}</div>
+      <div className='region'>{regionBChildren}</div>
+    </HmrcOdxSectionBased>
   );
 };

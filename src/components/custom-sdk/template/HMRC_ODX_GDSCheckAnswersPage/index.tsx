@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { getInstructions } from './utils';
 import type { PConnProps } from '@pega/react-sdk-components/lib/types/PConnProps';
 
@@ -12,13 +12,14 @@ interface HmrcOdxGdsCheckAnswersPageProps extends PConnProps {
   NumCols?: string;
   instructions?: string;
   // eslint-disable-next-line react/no-unused-prop-types
-  children: Array<any>;
+  children: any[];
 }
 
 export default function HmrcOdxGdsCheckAnswersPage(props: HmrcOdxGdsCheckAnswersPageProps) {
   // template structure setup
   const { getPConnect, NumCols = '1' } = props;
   const instructions = getInstructions(getPConnect(), props.instructions);
+  const [key, setKey] = useState(1);
 
   let divClass: string;
 
@@ -46,8 +47,7 @@ export default function HmrcOdxGdsCheckAnswersPage(props: HmrcOdxGdsCheckAnswers
   const arChildren = getPConnect().getChildren()[0].getPConnect().getChildren();
   const dfChildren = arChildren.map((kid, idx) => {
     kid.key = idx;
-    // @ts-ignore
-    return getPConnect().createComponent(kid.getPConnect().getRawMetadata());
+    return getPConnect().createComponent(kid.getPConnect().getRawMetadata(), '', 1, {});
   });
 
   // Create a ref to the mainer rendering container
@@ -133,7 +133,7 @@ export default function HmrcOdxGdsCheckAnswersPage(props: HmrcOdxGdsCheckAnswers
           ...(isEduStartJourney() && { ApplicationName: 'EDStart' })
         },
         options
-      ) // @ts-ignore
+      )
       .then((pageData: ResponseType) => {
         stepIDCYA = pageData?.CurrentStepId || pageData?.CYAStepID;
         if (stepIDCYA) {
@@ -153,6 +153,7 @@ export default function HmrcOdxGdsCheckAnswersPage(props: HmrcOdxGdsCheckAnswers
       });
   };
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   function updateHTML(htmlContent) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlContent, 'text/html');
@@ -230,6 +231,34 @@ export default function HmrcOdxGdsCheckAnswersPage(props: HmrcOdxGdsCheckAnswers
     }
   }
 
+  async function refreshView() {
+    // this will refresh the case view and load all required translations
+    try {
+      await pConn.getActionsApi().loadView(pConn.getCaseInfo()?.getKey(), pConn.getCurrentView(), {
+        autoDetectRefresh: true
+      });
+
+      // emit this event to reload the react component forcefully
+      PCore.getPubSubUtils().publish('forceRefreshRootComponent', {});
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error in refreshView: ', error);
+    }
+
+    setKey(previousKey => previousKey + 1);
+  }
+
+  useEffect(() => {
+    PCore.getPubSubUtils().subscribe(
+      'languageToggleTriggered',
+      refreshView,
+      'languageToggleTriggered'
+    );
+
+    return () =>
+      PCore.getPubSubUtils().unsubscribe('languageToggleTriggered', 'languageToggleTriggered');
+  }, [getPConnect]);
+
   useEffect(() => {
     if (dfChildrenContainerRef.current) {
       const checkChildren = () => {
@@ -262,7 +291,7 @@ export default function HmrcOdxGdsCheckAnswersPage(props: HmrcOdxGdsCheckAnswers
   }, [dfChildren]);
 
   return (
-    <StyledHmrcOdxGdsCheckAnswersPageWrapper>
+    <StyledHmrcOdxGdsCheckAnswersPageWrapper key={key}>
       <>
         {instructions && (
           <div className='psdk-default-form-instruction-text'>

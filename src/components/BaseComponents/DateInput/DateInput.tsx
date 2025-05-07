@@ -45,9 +45,8 @@ export default function DateInput(props) {
 
   // TODO - Investigate if possible to set error class per input depending on error message (e.g. if only year is missing, only error style year input)
 
-  const describedbyIds = `${hintText ? makeHintId(name) : ''} ${
-    errorText ? makeErrorId(name) : ''
-  }`.trim();
+  const describedbyIds =
+    `${hintText ? makeHintId(name) : ''} ${errorText ? makeErrorId(name) : ''}`.trim();
   if (describedbyIds.length !== 0) {
     inputProps['aria-describedby'] = describedbyIds;
   }
@@ -72,6 +71,7 @@ export default function DateInput(props) {
             label={dayLabel}
             labelIsHeading={false}
             extraLabelClasses='govuk-date-input__label'
+            parentManagedError
           >
             <input
               className={[
@@ -95,6 +95,7 @@ export default function DateInput(props) {
             label={monthLabel}
             labelIsHeading={false}
             extraLabelClasses='govuk-date-input__label'
+            parentManagedError
           >
             <input
               className={[
@@ -118,6 +119,7 @@ export default function DateInput(props) {
             label={yearLabel}
             labelIsHeading={false}
             extraLabelClasses='govuk-date-input__label'
+            parentManagedError
           >
             <input
               className={[

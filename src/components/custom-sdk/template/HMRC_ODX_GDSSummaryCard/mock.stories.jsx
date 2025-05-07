@@ -1,5 +1,6 @@
 import { Input, DateInput, RadioButtonGroup, RadioButton } from '@pega/cosmos-react-core'; // components required for render
 
+// eslint-disable-next-line storybook/story-exports
 let updateVals = [];
 
 function updateProp(propName, value) {

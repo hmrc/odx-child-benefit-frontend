@@ -10,7 +10,7 @@
   "type": "Template",
   "subtype": "FORM",
   "icon": "DefaultForm.svg",
-    "properties": [
+  "properties": [
     {
       "format": "SELECT",
       "name": "NumCols",

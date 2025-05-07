@@ -162,6 +162,7 @@ export const removeRedundantString = (redundantString: string, separator: string
   const list = redundantString.split(separator);
   const newList = [];
   let uniqueString = '';
+  // eslint-disable-next-line prefer-regex-literals
   const emailPattern = new RegExp(/\S+@\S+\.\S+/);
   const checkEmail = emailPattern.test(redundantString);
   if (list.length > 0) {
@@ -175,17 +176,17 @@ export const removeRedundantString = (redundantString: string, separator: string
       uniqueString = newList.map(element => element.trim()).join(separatorStr);
     }
   }
-  return uniqueString;
+  return uniqueString.trim();
 };
 
 export const checkStatus = () => {
   const containername = PCore.getContainerUtils().getActiveContainerItemName(
     `${PCore.getConstants().APP.APP}/primary`
   );
-  const context = PCore.getContainerUtils().getActiveContainerItemName(`${containername}/workarea`);
-  const status = PCore.getStoreValue('.pyStatusWork', 'caseInfo.content', context);
+  const status = PCore.getStoreValue('.pyStatusWork', 'caseInfo.content', containername);
   return status;
 };
+
 export const triggerLogout = () => {
   let authType = 'gg';
   getSdkConfig().then(sdkConfig => {
@@ -208,7 +209,6 @@ export const triggerLogout = () => {
 
   PCore.getDataPageUtils()
     .getPageDataAsync('D_AuthServiceLogout', 'root', { AuthService: authService })
-    // @ts-ignore
     .then((response: unknown) => {
       const logoutUrl = (response as responseType).URLResourcePath2;
 

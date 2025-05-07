@@ -1,12 +1,13 @@
 import React from 'react';
-import { getHomeUrl, authIsMainRedirect, authRedirectCallback } from '@pega/auth/lib/sdk-auth-manager';
+import {
+  getHomeUrl,
+  authIsMainRedirect,
+  authRedirectCallback
+} from '@pega/auth/lib/sdk-auth-manager';
 import { authDone } from '@pega/auth/lib/auth-code-redirect';
 
-
 export default function AuthPage() {
-
-  if( authIsMainRedirect() ) {
-
+  if (authIsMainRedirect()) {
     authRedirectCallback(window.location.href, () => {
       // eslint-disable-next-line no-restricted-globals
       location.href = `${getHomeUrl()}portal`;
@@ -15,7 +16,5 @@ export default function AuthPage() {
     authDone();
   }
 
-  return (
-    <div />
-  );
+  return <div />;
 }

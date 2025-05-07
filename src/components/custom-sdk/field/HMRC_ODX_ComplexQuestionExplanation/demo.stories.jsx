@@ -38,13 +38,13 @@ export const BaseHmrcOdxComplexQuestionExplanation = () => {
         }
       };
     },
-    onChange: (event) => { setValue(event.target.value); },
-    onBlur: () => { return configProps.value; }
+    onChange: event => {
+      setValue(event.target.value);
+    },
+    onBlur: () => {
+      return configProps.value;
+    }
   };
 
-  return (
-    <>
-      <HmrcOdxComplexQuestionExplanation {...props} />
-    </>
-  );
+  return <HmrcOdxComplexQuestionExplanation {...props} />;
 };

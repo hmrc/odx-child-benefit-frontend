@@ -13,17 +13,12 @@ export default function ActionButtons(props) {
   // This is for chb tactical solution only
   const taskListStepId = 'SubProcessSF7_AssignmentSF1';
   const thePConn = getPConnect();
-  const _containerName = thePConn.getContainerName();
-  const _context = thePConn.getContextName();
+  const context = thePConn.getContextName();
 
   interface ResponseType {
     CYAStepID: string;
     CurrentStepId: string;
   }
-
-  const containerID = PCore.getContainerUtils()
-    .getContainerAccessOrder(`${_context}/${_containerName}`)
-    .at(-1);
 
   const contextWorkarea = PCore.getContainerUtils().getActiveContainerItemName(
     `${PCore.getConstants().APP.APP}/primary`
@@ -45,43 +40,39 @@ export default function ActionButtons(props) {
   }
   function navigateToTaskList(event) {
     event.preventDefault();
-    thePConn.getActionsApi().navigateToStep(taskListStepId, containerID);
+    thePConn.getActionsApi().navigateToStep(taskListStepId, context);
   }
 
-  function navigateToCYA(event, dataPageName, flowAction) {
+  async function navigateToCYA(event, dataPageName, flowAction) {
     event.preventDefault();
-    event.target.style.pointerEvents = 'none';
     const options = {
       invalidateCache: true
     };
 
+    if (isDisabled) return;
+    setIsDisabled(true);
+
     try {
-      PCore.getDataPageUtils()
-        .getPageDataAsync(
-          dataPageName,
-          'root',
-          {
-            FlowActionName: flowAction,
-            CaseID: thePConn.getCaseSummary().content.pyID,
-            ...(isEduStartJourney() && { ApplicationName: 'EDStart' })
-          },
-          options
-        ) // @ts-ignore
-        .then((pageData: ResponseType) => {
-          const stepID = pageData?.CYAStepID || pageData?.CurrentStepId;
-          if (stepID) {
-            thePConn.getActionsApi().navigateToStep(stepID, containerID);
-          }
-        })
-        .catch(err => {
-          // eslint-disable-next-line no-console
-          console.error('Error fetching data:', err);
-        });
-    } catch (error) {
+      const pageData: ResponseType = (await PCore.getDataPageUtils().getPageDataAsync(
+        dataPageName,
+        'root',
+        {
+          FlowActionName: flowAction,
+          CaseID: thePConn.getCaseSummary().content.pyID,
+          ...(isEduStartJourney() && { ApplicationName: 'EDStart' })
+        },
+        options
+      )) as ResponseType;
+
+      const stepID = pageData?.CYAStepID || pageData?.CurrentStepId;
+      if (stepID) {
+        await thePConn.getActionsApi().navigateToStep(stepID, context);
+      }
+    } catch (err) {
       // eslint-disable-next-line no-console
-      console.error('Error in navigateToCYA:', error);
+      console.error('Error fetching data:', err);
     } finally {
-      event.target.style.pointerEvents = 'auto';
+      setIsDisabled(false);
     }
   }
 
@@ -90,13 +81,17 @@ export default function ActionButtons(props) {
   }, [isDeclarationPage]);
 
   function renderButtonName(mButton) {
-    if (!isUnAuth && !isHICBC && mButton === 'Continue') {
-      return t('SAVE_AND_CONTINUE');
-    } else if (!isUnAuth && !isHICBC && mButton === 'TryAgain') {
-      return t('TRY_AGAIN');
-    } else {
-      return localizedVal(mButton, localeCategory);
+    const buttonMap = {
+      Continue: t('SAVE_AND_CONTINUE'),
+      ContinueOnly: t('CONTINUE'),
+      TryAgain: t('TRY_AGAIN')
+    };
+
+    if (!isUnAuth && !isHICBC && buttonMap[mButton]) {
+      return buttonMap[mButton] || localizedVal(mButton, localeCategory);
     }
+
+    return localizedVal(mButton, localeCategory);
   }
 
   return (
@@ -138,7 +133,7 @@ export default function ActionButtons(props) {
         )}
         {isDeclarationPage && isEduStartJourney() && (
           <Button
-            variant='link'
+            variant='secondary'
             onClick={e => {
               navigateToCYA(e, 'D_GetStepIdByApplicationAndAction', 'CheckYourAnswers');
             }}

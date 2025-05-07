@@ -1,24 +1,23 @@
 /* eslint-disable react/jsx-boolean-value */
 // @ts-nocheck - TypeScript type checking to be added soon
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import PropTypes from "prop-types";
+import PropTypes from 'prop-types';
 import { Utils } from '@pega/react-sdk-components/lib/components/helpers/utils';
-import { Card, CardHeader, Avatar, Typography, Divider } from "@material-ui/core";
+import { Card, CardHeader, Avatar, Typography, Divider } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 
-import StoreContext from "@pega/react-sdk-components/lib/bridge/Context/StoreContext";
-import CaseViewActionsMenu from "@pega/react-sdk-components/lib/components/template/CaseViewActionsMenu";
+import StoreContext from '@pega/react-sdk-components/lib/bridge/Context/StoreContext';
+import CaseViewActionsMenu from '@pega/react-sdk-components/lib/components/template/CaseViewActionsMenu';
 import VerticalTabs from '@pega/react-sdk-components/lib/components/infra/VerticalTabs/VerticalTabs';
 import DeferLoad from '@pega/react-sdk-components/lib/components/infra/DeferLoad';
 
-
 declare const PCore;
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     paddingRight: theme.spacing(1),
     paddingLeft: theme.spacing(1),
@@ -27,24 +26,25 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(1),
     marginLeft: theme.spacing(1),
     marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing(1)
   },
   caseViewHeader: {
     backgroundColor: theme.palette.info.light,
     color: theme.palette.getContrastText(theme.palette.info.light),
-    borderRadius: "inherit",
+    borderRadius: 'inherit'
   },
   caseViewIconBox: {
     backgroundColor: theme.palette.info.dark,
     width: theme.spacing(8),
     height: theme.spacing(8),
-    padding: theme.spacing(1),
+    padding: theme.spacing(1)
   },
   caseViewIconImage: {
     filter: 'invert(100%)'
   }
 }));
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export default function CaseView(props) {
   const {
     getPConnect,
@@ -70,19 +70,18 @@ export default function CaseView(props) {
 
   const classes = useStyles();
 
-  const editAction = availableActions.find((action) => action.ID === 'pyUpdateCaseDetails');
+  const editAction = availableActions.find(action => action.ID === 'pyUpdateCaseDetails');
   const localeKey = `${caseTypeID}!CASE!${caseTypeName}`.toUpperCase();
   /**
    *
    * @param inName the metadata <em>name</em> that will cause a region to be returned
    */
   function getChildRegionByName(inName: string): any {
-
     for (const child of children) {
-      const theMetadataType: string = child.props.getPConnect().getRawMetadata()['type'].toLowerCase();
-      const theMetadataName: string = child.props.getPConnect().getRawMetadata()['name'].toLowerCase();
+      const theMetadataType: string = child.props.getPConnect().getRawMetadata().type.toLowerCase();
+      const theMetadataName: string = child.props.getPConnect().getRawMetadata().name.toLowerCase();
 
-      if ((theMetadataType === "region") && (theMetadataName === inName )) {
+      if (theMetadataType === 'region' && theMetadataName === inName) {
         return child;
       }
     }
@@ -90,12 +89,11 @@ export default function CaseView(props) {
     return null;
   }
 
-
-  const theSummaryRegion = getChildRegionByName("summary");
-  const theStagesRegion = getChildRegionByName("stages");
-  const theTodoRegion = getChildRegionByName("todo");
-  const theUtilitiesRegion = getChildRegionByName("utilities");
-  const theTabsRegion = getChildRegionByName("tabs");
+  const theSummaryRegion = getChildRegionByName('summary');
+  const theStagesRegion = getChildRegionByName('stages');
+  const theTodoRegion = getChildRegionByName('todo');
+  const theUtilitiesRegion = getChildRegionByName('utilities');
+  const theTabsRegion = getChildRegionByName('tabs');
 
   const svgCase = Utils.getImageSrc(icon, PCore.getAssetLoader().getStaticServerUrl());
 
@@ -108,10 +106,10 @@ export default function CaseView(props) {
   const theTabsRegionChildren = theTabsRegion.props.getPConnect().getChildren();
 
   // vertTabInfo is sent to VerticalTabs component
-  const vertTabInfo: Array<Object> = [];
+  const vertTabInfo: Object[] = [];
 
   // deferLoadInfo is sent to DeferLoad component (currently selected entry)
-  const deferLoadInfo: Array<any> = [];
+  const deferLoadInfo: any[] = [];
 
   if (theTabsRegionChildren) {
     // populate vertTabInfo and deferLoadInfo
@@ -135,8 +133,6 @@ export default function CaseView(props) {
     });
   }
 
-
-
   function handleVerticalTabClick(eventDetail: any) {
     const theItem = parseInt(eventDetail.additionalData.itemClicked, 10);
 
@@ -146,14 +142,13 @@ export default function CaseView(props) {
     }
   }
 
-
   // Add and Remove event listener for VerticalTabClick only at startup and teardown
   useEffect(() => {
     document.addEventListener('VerticalTabClick', (event: any) => {
       handleVerticalTabClick(event.detail);
     });
 
-    return ():void => {
+    return (): void => {
       // inform that the component is unmounted so other code can
       //  know not to try to call useState setters (to avoid console warnings)
       isComponentMounted = false;
@@ -161,90 +156,112 @@ export default function CaseView(props) {
       document.removeEventListener('VerticalTabClick', (event: any) => {
         handleVerticalTabClick(event.detail);
       });
-    }
-  }, [])
+    };
+  }, []);
 
   useEffect(() => {
     if (hasNewAttachments) {
-      PCore.getPubSubUtils().publish(PCore.getEvents().getCaseEvent().CASE_ATTACHMENTS_UPDATED_FROM_CASEVIEW, true);
+      PCore.getPubSubUtils().publish(
+        PCore.getEvents().getCaseEvent().CASE_ATTACHMENTS_UPDATED_FROM_CASEVIEW,
+        true
+      );
     }
   }, [hasNewAttachments]);
 
   function _editClick() {
-
     const actionsAPI = thePConn.getActionsApi();
     const openLocalAction = actionsAPI.openLocalAction.bind(actionsAPI);
 
-    openLocalAction( editAction.ID, { ...editAction});
+    openLocalAction(editAction.ID, { ...editAction });
   }
-
 
   function getActionButtonsHtml(): any {
-
-    const aBHtml = <Box>
-      {editAction && (<Button onClick={() => { _editClick() }}>{t('EDIT')}</Button>)}
-            <CaseViewActionsMenu getPConnect={getPConnect} availableActions={availableActions} availableProcesses={availableProcesses} />
-        </Box>;
-
+    const aBHtml = (
+      <Box>
+        {editAction && (
+          <Button
+            onClick={() => {
+              _editClick();
+            }}
+          >
+            {t('EDIT')}
+          </Button>
+        )}
+        <CaseViewActionsMenu
+          getPConnect={getPConnect}
+          availableActions={availableActions}
+          availableProcesses={availableProcesses}
+        />
+      </Box>
+    );
 
     return aBHtml;
-
   }
 
-
   function getContainerContents() {
-
     if (!displayOnlyFA) {
       // show full portal
       return (
         <Grid container>
           <Grid item xs={3}>
-          <div hidden={true} id="current-caseID">{currentCaseID}</div>
-          <Card className={classes.root} >
-            <CardHeader className={classes.caseViewHeader}
-              title={<Typography variant="h6" component="div">{PCore.getLocaleUtils().getLocaleValue(header, '', localeKey)}</Typography>}
-              subheader={<Typography variant="body1" component="div" id="caseId">{subheader}</Typography>}
-              avatar={
-                <Avatar className={classes.caseViewIconBox} variant="square">
-                  <img src={svgCase} className={classes.caseViewIconImage}/>
-                </Avatar>
-              }
-            />
-            {getActionButtonsHtml()}
-            <Divider />
-            {theSummaryRegion}
-            <Divider />
-            { vertTabInfo.length > 1 && <VerticalTabs tabconfig={vertTabInfo} />}
-          </Card>
-        </Grid>
+            <div hidden={true} id='current-caseID'>
+              {currentCaseID}
+            </div>
+            <Card className={classes.root}>
+              <CardHeader
+                className={classes.caseViewHeader}
+                title={
+                  <Typography variant='h6' component='div'>
+                    {PCore.getLocaleUtils().getLocaleValue(header, '', localeKey)}
+                  </Typography>
+                }
+                subheader={
+                  <Typography variant='body1' component='div' id='caseId'>
+                    {subheader}
+                  </Typography>
+                }
+                avatar={
+                  <Avatar className={classes.caseViewIconBox} variant='square'>
+                    <img src={svgCase} className={classes.caseViewIconImage} />
+                  </Avatar>
+                }
+              />
+              {getActionButtonsHtml()}
+              <Divider />
+              {theSummaryRegion}
+              <Divider />
+              {vertTabInfo.length > 1 && <VerticalTabs tabconfig={vertTabInfo} />}
+            </Card>
+          </Grid>
 
-        <Grid item xs={6}>
-          {theStagesRegion}
-          {theTodoRegion}
-          { deferLoadInfo.length > 0 && <DeferLoad getPConnect={getPConnect} name={deferLoadInfo[activeVertTab].config.name } isTab />}
-        </Grid>
+          <Grid item xs={6}>
+            {theStagesRegion}
+            {theTodoRegion}
+            {deferLoadInfo.length > 0 && (
+              <DeferLoad
+                getPConnect={getPConnect}
+                name={deferLoadInfo[activeVertTab].config.name}
+                isTab
+              />
+            )}
+          </Grid>
 
-        <Grid item xs={3}>
-          {theUtilitiesRegion}
+          <Grid item xs={3}>
+            {theUtilitiesRegion}
+          </Grid>
         </Grid>
-      </Grid>
-      )
+      );
     } else {
       // displayOnlyFA - only show the "todo" region
-      return (
-        <>{theTodoRegion}</>
-      )
+      return <>{theTodoRegion}</>;
     }
   }
 
-
-  return (
-      getContainerContents()
-  );
+  return getContainerContents();
 }
 
 CaseView.defaultProps = {
-  icon: "",
+  icon: '',
   children: [],
   caseInfo: {},
   showIconInHeader: true,

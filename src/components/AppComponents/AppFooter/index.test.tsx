@@ -1,6 +1,5 @@
-import React from 'react';
 import { render, waitFor, act } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
+import '@testing-library/jest-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
 import AppFooter from '.';
 import * as rdd from 'react-device-detect';
@@ -33,6 +32,7 @@ describe('<AppFooter />', () => {
     });
 
     let container;
+
     await act(async () => {
       ({ container } = render(
         <Router>
@@ -41,6 +41,7 @@ describe('<AppFooter />', () => {
       ));
     });
 
+    // eslint-disable-next-line testing-library/no-node-access
     const customViewElement = await waitFor(() => container.querySelector('footer'));
 
     expect(customViewElement).not.toBeInTheDocument();
@@ -53,6 +54,7 @@ describe('<AppFooter />', () => {
     });
 
     let container;
+
     await act(async () => {
       ({ container } = render(
         <Router>
@@ -61,6 +63,7 @@ describe('<AppFooter />', () => {
       ));
     });
 
+    // eslint-disable-next-line testing-library/no-node-access
     const customViewElement = await waitFor(() => container.querySelector('footer'));
 
     expect(customViewElement).toBeInTheDocument();

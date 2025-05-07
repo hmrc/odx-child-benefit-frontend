@@ -36,6 +36,7 @@ export default function HmrcOdxGdsInfoPanel(props) {
     case '2':
       panelTitle = t('GDS_INFO_WARNING');
       break;
+    // eslint-disable-next-line default-case-last
     default:
     case '3':
       panelTitle = t('GDS_INFO_SUCCESS');

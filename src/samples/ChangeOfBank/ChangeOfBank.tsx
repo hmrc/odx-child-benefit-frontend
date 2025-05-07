@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { loginIfNecessary, sdkIsLoggedIn, getSdkConfig } from '@pega/auth/lib/sdk-auth-manager';
 import AppHeader from '../../components/AppComponents/AppHeader';
 import AppFooter from '../../components/AppComponents/AppFooter';
@@ -18,9 +18,10 @@ import StartPage from './StartPage';
 import SummaryPage from '../../components/AppComponents/SummaryPage';
 import ShutteredServiceWrapper from '../../components/AppComponents/ShutterService/ShutteredServiceWrapper';
 import useTimeoutTimer from '../../components/helpers/hooks/useTimeoutTimer';
+import LanguageToggle from '../../components/AppComponents/LanguageToggle';
 
 export default function ChangeOfBank() {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [showTimeoutModal, setShowTimeoutModal] = useState(false);
   const [showSignoutModal, setShowSignoutModal] = useState(false);
   const [summaryPageContent, setSummaryPageContent] = useState<any>({
@@ -34,12 +35,20 @@ export default function ChangeOfBank() {
 
   registerServiceName(t('CHB_HOMEPAGE_HEADING'));
   const onRedirectDone = () => {
-    history.replace('/change-of-bank');
+    navigate('/change-of-bank');
     // appName and mainRedirect params have to be same as earlier invocation
     loginIfNecessary({ appName: 'ChB', mainRedirect: true });
   };
 
-  const { showPega, setShowPega, caseId, showResolutionPage } = useStartMashup(onRedirectDone, {
+  const {
+    showPega,
+    setShowPega,
+    caseId,
+    showResolutionPage,
+    renderRootComponent,
+    rootProps,
+    assignmentPConnect
+  } = useStartMashup(onRedirectDone, {
     appBacklinkProps: {}
   });
 
@@ -52,8 +61,9 @@ export default function ChangeOfBank() {
       const status: boolean = await getServiceShutteredStatus();
       setServiceIsShuttered(status);
     };
-
-    getShutteredService();
+    if (assignmentPConnect) {
+      getShutteredService();
+    }
   }, [showPega]);
 
   useEffect(() => {
@@ -75,7 +85,7 @@ export default function ChangeOfBank() {
               'languageToggleTriggered',
               'summarypageLanguageChange'
             );
-            const summaryData: Array<any> =
+            const summaryData: any[] =
               response.data.data.caseInfo.content.ScreenContent.LocalisedContent;
             const currentLang =
               sessionStorage.getItem('rsdk_locale')?.slice(0, 2).toUpperCase() || 'EN';
@@ -125,14 +135,32 @@ export default function ChangeOfBank() {
     staySignedIn(setShowTimeoutModal, 'D_ClaimantSubmittedChBCases', null, null);
   };
 
+  // Function to force re-render the pega Root component
+  const forceRefreshRootComponent = () => {
+    renderRootComponent();
+  };
+
+  useEffect(() => {
+    if (Object.keys(rootProps).length) {
+      PCore.getPubSubUtils().subscribe(
+        'forceRefreshRootComponent',
+        forceRefreshRootComponent,
+        'forceRefreshRootComponent'
+      );
+    }
+    return () => {
+      PCore?.getPubSubUtils().unsubscribe('forceRefreshRootComponent', 'forceRefreshRootComponent');
+    };
+  }, [rootProps]);
+
   return (
     sdkIsLoggedIn() && (
       <>
         <AppHeader
-          hasLanguageToggle
           betafeedbackurl={`${hmrcURL}contact/beta-feedback?service=463&referrerUrl=${window.location}`}
           appname={t('CHB_HOMEPAGE_HEADING')}
           handleSignout={handleSignout}
+          serviceLink='change-of-bank'
         />
         <TimeoutPopup
           show={showTimeoutModal}
@@ -146,11 +174,10 @@ export default function ChangeOfBank() {
           }}
           signoutHandler={triggerLogout}
           isAuthorised
-          signoutButtonText={t('SIGN-OUT')}
-          staySignedInButtonText={t('STAY_SIGNED_IN')}
         />
         <ShutteredServiceWrapper serviceIsShuttered={serviceIsShuttered}>
           <div className='govuk-width-container'>
+            <LanguageToggle />
             {!showPega && <StartPage handleStartCOB={handleStartCOB} />}
             <div id='pega-part-of-page'>
               <div id='pega-root'></div>

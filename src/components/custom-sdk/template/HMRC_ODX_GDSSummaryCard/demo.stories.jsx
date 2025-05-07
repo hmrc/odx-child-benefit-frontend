@@ -17,7 +17,7 @@ export default {
 let Template = {};
 export const Primary = Template.bind({});
 
- Template = args => {
+Template = args => {
   const regionAChildren = pyReviewRawMetadata.children[0].children.map(child => {
     return Primary.args.getPConnect().createComponent(child);
   });
@@ -42,7 +42,7 @@ const renderField = resolvedProps => {
     type,
     readOnly = false, // is field read only?
     value = '',
-    label = '',
+    label = ''
     // theme = useTheme()
   } = resolvedProps;
 
@@ -79,8 +79,8 @@ const renderField = resolvedProps => {
           />
         </RadioButtonGroup>
       );
-      default:
-        return '';
+    default:
+      return '';
   }
 
   // let val = value != '' ? <Input label={label} value={value} readOnly={readOnly} /> : '';
@@ -118,7 +118,6 @@ const renderField = resolvedProps => {
   // return <Input label={label} value={value} />;
 };
 
-
 // core template as used by Storybook
 Primary.args = {
   handleOnClick: () => {
@@ -134,7 +133,7 @@ Primary.args = {
   actions: {
     navigateToStep: () => {
       // Return the children array for the mock.
-      const navigateToStepPromise = new Promise((resolve) => {
+      const navigateToStepPromise = new Promise(resolve => {
         // Perform asynchronous operation
         // ...
         // Simulate successful response
@@ -203,4 +202,3 @@ Primary.args = {
     };
   }
 };
-

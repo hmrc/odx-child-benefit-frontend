@@ -44,12 +44,12 @@ export default function HmrcOdxGdsTextPresentation(props: HmrcOdxGdsTextPresenta
 
   const readOnlyProp = {};
 
-  const extraInputProps = { onChange, value };
+  const extraInputProps: { onChange: any; value: string; nino?: string } = { onChange, value };
 
   if (configAlternateDesignSystem?.GDSPresentationType) {
-    extraInputProps['nino'] = configAlternateDesignSystem.nino;
+    extraInputProps.nino = configAlternateDesignSystem.nino;
   } else {
-    extraInputProps['nino'] = 'off';
+    extraInputProps.nino = 'off';
   }
 
   let label = props.label;

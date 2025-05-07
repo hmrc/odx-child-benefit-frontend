@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { scrollToTop, getServiceShutteredStatus } from '../../components/helpers/utils';
 import { useTranslation } from 'react-i18next';
 import Button from '../../components/BaseComponents/Button/Button';
-import dayjs from 'dayjs';
 import WarningText from '../../components/BaseComponents/GDSWarningText/WarningText';
+import useDateTimeFormatter from '../../components/helpers/hooks/useDateTimeFormatter';
 
 declare const PCore: any;
 
@@ -23,6 +23,7 @@ export default function ClaimsList(props) {
     setShowLandingPage
   } = props;
   const { t } = useTranslation();
+  const { formatDate, getFormattedDate } = useDateTimeFormatter();
 
   const containerManger = thePConn?.getContainerManager();
   const locale = PCore.getEnvironmentInfo().locale.replaceAll('-', '_');
@@ -114,46 +115,20 @@ export default function ClaimsList(props) {
       ? `${t('EXTENSION_REQUESTS_FOR')} ${firstName} ${lastName}`
       : `${t('EXTENSION_REQUESTS')}`;
 
-  function timeStamp(hour: string, min: string, meridiem: string) {
-    const meridiemTime = meridiem === 'am' ? t('AM') : t('PM');
-    if (hour === '12' && min === '00') {
-      return meridiem === 'pm' ? t('MIDDAY') : t('MIDNIGHT');
-    }
-
-    // Format time without minutes if minutes are '00'
-    if (min === '00') {
-      return `${hour}${meridiemTime}`;
-    }
-
-    // Default format
-    return `${hour}:${min}${meridiemTime}`;
-  }
-
   function claimHiddenText(firstName, lastName, claimItem) {
     if (!firstName && !lastName) {
-      return `${t('CREATED')} ${dayjs(claimItem.dateCreated).format('D MMMM YYYY')} ${t(
-        'AT'
-      )} ${timeStamp(
-        dayjs(claimItem.dateCreated).format('h'),
-        dayjs(claimItem.dateCreated).format('mm'),
-        dayjs(claimItem.dateCreated).format('a')
-      )}`;
+      return `${t('CREATED')} ${getFormattedDate(claimItem.dateCreated)}`;
     }
   }
 
   function appendHiddenChildDetails(childName: string, claimItem, actionButton) {
-    const getFormattedTimestamp = () =>
-      `${dayjs(claimItem.dateCreated).format('D MMM YYYY')} ${t('AT')} ${timeStamp(
-        dayjs(claimItem.dateCreated).format('h'),
-        dayjs(claimItem.dateCreated).format('mm'),
-        dayjs(claimItem.dateCreated).format('a')
-      )}`;
+    const getFormattedTimestamp = () => `${getFormattedDate(claimItem.dateCreated)}`;
 
     return (
       <>
         {childName && childName !== 'null null' && actionButton === 'CONTINUE_REQUEST' ? (
           <span className='govuk-visually-hidden'>
-            {t('FOR')} {childName} {t('CREATED')} {getFormattedTimestamp()}
+            {t('FOR')} {childName} {t('CREATED').toLowerCase()} {getFormattedTimestamp()}
           </span>
         ) : null}
 
@@ -165,44 +140,34 @@ export default function ClaimsList(props) {
 
         {childName && actionButton === 'VIEW_REQUEST' ? (
           <span className='govuk-visually-hidden'>
-            {t('FOR')} {childName} {t('SUBMITTED')} {getFormattedTimestamp()}
+            {t('FOR')} {childName} {t('SUBMITTED').toLowerCase()} {getFormattedTimestamp()}
           </span>
         ) : null}
       </>
     );
   }
 
-  const renderSummaryListRow = (claimItem, fieldTypeValue) => (
-    <div className='govuk-summary-list__row'>
-      <dt className='govuk-summary-list__key'>{fieldTypeValue}</dt>
-      {fieldTypeValue === t('CREATED') && fieldTypeValue !== t('LAST_SAVED') ? (
+  const renderSummaryListRow = (claimItem, fieldTypeValue) => {
+    const isCreatedOrSubmitted =
+      fieldTypeValue === t('CREATED') || fieldTypeValue === t('SUBMITTED');
+    const isLastSaved = fieldTypeValue === t('LAST_SAVED');
+
+    return (
+      <div className='govuk-summary-list__row'>
+        <dt className='govuk-summary-list__key'>{fieldTypeValue}</dt>
         <dd className='govuk-summary-list__value'>
-          {dayjs(claimItem.dateCreated).format('D MMMM YYYY')}
-          {t('AT')}
-          {timeStamp(
-            dayjs(claimItem.dateCreated).format('h'),
-            dayjs(claimItem.dateCreated).format('mm'),
-            dayjs(claimItem.dateCreated).format('a')
-          )}
+          {isCreatedOrSubmitted && !isLastSaved && getFormattedDate(claimItem.dateCreated)}
+          {isLastSaved && getFormattedDate(claimItem.dateUpdated)}
         </dd>
-      ) : (
-        <dd className='govuk-summary-list__value'>
-          {dayjs(claimItem.dateUpdated).format('D MMMM YYYY')} {t('AT')}
-          {timeStamp(
-            dayjs(claimItem.dateUpdated).format('h'),
-            dayjs(claimItem.dateUpdated).format('mm'),
-            dayjs(claimItem.dateUpdated).format('a')
-          )}
-        </dd>
-      )}
-    </div>
-  );
+      </div>
+    );
+  };
 
   const fieldTypeRow = claimItem => {
     if (fieldType === t('CREATED')) {
       return renderSummaryListRow(claimItem, t('CREATED'));
-    } else if (fieldType === t('SUBMITTED_DATE')) {
-      return renderSummaryListRow(claimItem, t('SUBMITTED_DATE'));
+    } else if (fieldType === t('SUBMITTED')) {
+      return renderSummaryListRow(claimItem, t('SUBMITTED'));
     }
   };
 
@@ -221,9 +186,7 @@ export default function ClaimsList(props) {
           {child?.dob && (
             <div className='govuk-summary-list__row'>
               <dt className='govuk-summary-list__key'>{t('DATE_OF_BIRTH')}</dt>
-              <dd className='govuk-summary-list__value'>
-                {dayjs(child.dob).format('D MMMM YYYY')}
-              </dd>
+              <dd className='govuk-summary-list__value'>{formatDate(child.dob)}</dd>
             </div>
           )}
           {fieldTypeRow(claimItem)}
@@ -232,7 +195,6 @@ export default function ClaimsList(props) {
         </dl>
 
         <Button
-          attributes={{ className: 'govuk-!-margin-bottom-4' }}
           variant='secondary'
           onClick={e => {
             _rowClick(e, claimItem.rowDetails);
@@ -265,18 +227,17 @@ export default function ClaimsList(props) {
             </a>
           </div>
         )}
-
-        <hr
-          className='govuk-section-break govuk-section-break--l govuk-section-break--visible'
-          aria-hidden='true'
-        ></hr>
       </React.Fragment>
     ));
   }
 
   return (
     <>
-      <h2 className='govuk-heading-l'>{title}</h2>
+      <h2
+        className={`govuk-heading-l ${title === t('SUBMITTED_REQUESTS') ? 'govuk-!-padding-top-4' : ''}`}
+      >
+        {title}
+      </h2>
       {title === t('REQUESTS_IN_PROGRESS') && (
         <WarningText className='govuk-body'>{t('EDSTART_PORTAL_WARNING_TEXT')}</WarningText>
       )}

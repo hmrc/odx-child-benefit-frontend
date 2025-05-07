@@ -15,23 +15,22 @@ if (!window.PCore) {
 }
 
 window.PCore.getErrorHandler = () => {
-    return {
-      getGenericFailedMessage() {
-        /* nothing */
-      }
-    };
+  return {
+    getGenericFailedMessage() {
+      /* nothing */
+    }
+  };
 };
 
 window.PCore.getConstants = () => {
   return {
     CASE_INFO: {
-      INSTRUCTIONS: ""
+      INSTRUCTIONS: ''
     }
-  }
+  };
 };
 
 export const BaseHmrcOdxGdsCheckAnswersPage = () => {
-
   const [firstName, setFirstName] = useState('John');
   const [middleName, setMiddleName] = useState('');
   const [lastName, setLastName] = useState('Joe');
@@ -40,10 +39,10 @@ export const BaseHmrcOdxGdsCheckAnswersPage = () => {
   const [email, setEmail] = useState('john@doe.com');
 
   const props = {
-    NumCols: "1",
+    NumCols: '1',
     template: 'DefaultForm',
 
-     getPConnect: () => {
+    getPConnect: () => {
       return {
         getChildren: () => {
           return [
@@ -65,8 +64,12 @@ export const BaseHmrcOdxGdsCheckAnswersPage = () => {
                           return {
                             getActionsApi: () => {
                               return {
-                                updateFieldValue: () => {/* nothing */},
-                                triggerFieldChange: () => {/* nothing */}
+                                updateFieldValue: () => {
+                                  /* nothing */
+                                },
+                                triggerFieldChange: () => {
+                                  /* nothing */
+                                }
                               };
                             },
                             getStateProps: () => {
@@ -88,8 +91,12 @@ export const BaseHmrcOdxGdsCheckAnswersPage = () => {
                           return {
                             getActionsApi: () => {
                               return {
-                                updateFieldValue: () => {/* nothing */},
-                                triggerFieldChange: () => {/* nothing */}
+                                updateFieldValue: () => {
+                                  /* nothing */
+                                },
+                                triggerFieldChange: () => {
+                                  /* nothing */
+                                }
                               };
                             },
                             getStateProps: () => {
@@ -113,8 +120,12 @@ export const BaseHmrcOdxGdsCheckAnswersPage = () => {
                           return {
                             getActionsApi: () => {
                               return {
-                                updateFieldValue: () => {/* nothing */},
-                                triggerFieldChange: () => {/* nothing */}
+                                updateFieldValue: () => {
+                                  /* nothing */
+                                },
+                                triggerFieldChange: () => {
+                                  /* nothing */
+                                }
                               };
                             },
                             getStateProps: () => {
@@ -233,22 +244,18 @@ export const BaseHmrcOdxGdsCheckAnswersPage = () => {
             }
           ];
         },
-        getValue: (val) => {
+        getValue: val => {
           return val;
         },
         getCurrentView: () => {
-          return "";
+          return '';
         },
         getCurrentClassID: () => {
-          return "";
+          return '';
         }
       };
     }
   };
 
-  return (
-    <>
-      <HmrcOdxGdsCheckAnswersPage {...props}></HmrcOdxGdsCheckAnswersPage>
-    </>
-  );
+  return <HmrcOdxGdsCheckAnswersPage {...props}></HmrcOdxGdsCheckAnswersPage>;
 };

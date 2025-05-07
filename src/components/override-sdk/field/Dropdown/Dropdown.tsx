@@ -30,22 +30,23 @@ export default function Dropdown(props) {
   const { hasBeenWrapped } = useContext(ReadOnlyDefaultFormContext);
 
   const localizedVal = PCore.getLocaleUtils().getLocaleValue;
-  const [options, setOptions] = useState<Array<IOption>>([]);
+  const [options, setOptions] = useState<IOption[]>([]);
   const [displayValue, setDisplayValue] = useState();
   let label = props.label;
   const { isOnlyField, overrideLabel } = useIsOnlyField(props.displayOrder);
   if (isOnlyField && !readOnly) label = overrideLabel.trim() ? overrideLabel : label;
-  const [errorMessage, setErrorMessage] = useState(localizedVal(validatemessage));
+  const [errorMessage, setErrorMessage] = useState(localizedVal(validatemessage, ''));
 
   const thePConn = getPConnect();
   const actionsApi = thePConn.getActionsApi();
 
   const propName = thePConn.getStateProps().value;
+  const fieldId = propName?.split('.')?.pop();
   const className = thePConn.getCaseInfo().getClassName();
   const refName = propName?.slice(propName.lastIndexOf('.') + 1);
 
   useEffect(() => {
-    setErrorMessage(localizedVal(validatemessage));
+    setErrorMessage(localizedVal(validatemessage, ''));
   }, [validatemessage]);
 
   useEffect(() => {
@@ -144,6 +145,7 @@ export default function Dropdown(props) {
       onChange={handleChange}
       value={value}
       name={name}
+      fieldId={fieldId}
     >
       <option key={placeholder} value=''>
         {placeholder}

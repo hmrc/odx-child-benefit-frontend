@@ -30,9 +30,9 @@ export default function RadioButtons(props) {
 
   const localizedVal = PCore.getLocaleUtils().getLocaleValue;
 
-  const [errorMessage, setErrorMessage] = useState(localizedVal(validatemessage));
+  const [errorMessage, setErrorMessage] = useState(localizedVal(validatemessage, ''));
   useEffect(() => {
-    setErrorMessage(localizedVal(validatemessage));
+    setErrorMessage(localizedVal(validatemessage, ''));
   }, [validatemessage]);
 
   const thePConn = getPConnect();
@@ -49,7 +49,8 @@ export default function RadioButtons(props) {
   configProperty = configProperty.startsWith('.') ? configProperty.substring(1) : configProperty;
 
   const metaData = Array.isArray(fieldMetadata)
-    ? (fieldMetadata.filter(field => field?.classID === className)[0] || fieldMetadata.filter(field => field?.displayAs === 'pxRadioButtons')[0])
+    ? fieldMetadata.filter(field => field?.classID === className)[0] ||
+      fieldMetadata.filter(field => field?.displayAs === 'pxRadioButtons')[0]
     : fieldMetadata;
   let displayName = metaData?.datasource?.propertyForDisplayText;
   displayName = displayName?.slice(displayName.lastIndexOf('.') + 1);
@@ -109,6 +110,7 @@ export default function RadioButtons(props) {
   const extraProps = { testProps: { 'data-test-id': testId } };
   const actionsApi = thePConn.getActionsApi();
   const propName = thePConn.getStateProps().value;
+  const fieldId = propName?.split('.')?.pop();
 
   const handleChange = event => {
     handleEvent(actionsApi, 'changeNblur', propName, event.target.value);
@@ -118,6 +120,7 @@ export default function RadioButtons(props) {
     <GDSRadioButtons
       {...props}
       name={name}
+      fieldId={fieldId}
       label={label}
       onChange={handleChange}
       legendIsHeading={isOnlyField}

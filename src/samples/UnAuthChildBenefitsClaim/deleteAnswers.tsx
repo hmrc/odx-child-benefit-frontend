@@ -1,17 +1,17 @@
 import React, { useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import MainWrapper from '../../components/BaseComponents/MainWrapper';
 import Button from '../../components/BaseComponents/Button/Button';
 import { useTranslation } from 'react-i18next';
 
 export default function DeleteAnswers() {
   const { t } = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const redirectChoseClaim = () => {
     sessionStorage.removeItem('isRefreshFromDeleteScreen');
     sessionStorage.removeItem('hasSessionTimedOut');
     sessionStorage.removeItem('isTasklistClicked');
-    history.push('/recently-claimed-child-benefit');
+    navigate('/recently-claimed-child-benefit');
   };
 
   useEffect(() => {

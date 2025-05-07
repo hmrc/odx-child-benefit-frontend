@@ -1,18 +1,12 @@
-import React, { createElement, Fragment } from 'react';
+import React, { createElement } from 'react';
 import MainWrapper from '../../../BaseComponents/MainWrapper';
 import createPConnectComponent from '@pega/react-sdk-components/lib/bridge/react_pconnect';
 import ConditionalWrapper from '../../../helpers/formatters/ConditionalWrapper';
 
-export default function Details(props) {
-  const { label, context, getPConnect } = props;
-
-  const localizedVal = PCore.getLocaleUtils().getLocaleValue;
-
+export default function Details({ label, context, getPConnect }) {
   // Using inherited config as a test to see if this is the root Details on Claim Summary, or embedded for correct wrapping
   const inheritedConfig = getPConnect()._inheritedConfig;
-  const localeCategory = 'Assignment';
-  // TODO: may be needed after page heading logic is re-worked (value may need changing to point to correct reference)
-  // const localeReference = `${getPConnect().getCaseInfo().getClassName()}!CASE!${getPConnect().getCaseInfo().getName()}`.toUpperCase();
+
   const children = getPConnect()
     .getChildren()
     .map((configObject, index) =>
@@ -46,7 +40,7 @@ export default function Details(props) {
         <>
           {label && context && (
             <h1 className='govuk-heading-l'>
-              {localizedVal(label, localeCategory /* ,localeReference */)} details
+              {PCore.getLocaleUtils().getLocaleValue(label, 'Assignment')}
             </h1>
           )}
           {children}
@@ -55,11 +49,3 @@ export default function Details(props) {
     ></ConditionalWrapper>
   );
 }
-
-Details.defaultProps = {
-  // children: []
-};
-
-Details.propTypes = {
-  // children: PropTypes.arrayOf(PropTypes.node)
-};

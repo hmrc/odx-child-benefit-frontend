@@ -6,7 +6,7 @@ import PaymentHistoryTable from './PaymentHistoryTable';
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key
-  }),
+  })
 }));
 
 jest.mock('dayjs', () => {
@@ -15,22 +15,26 @@ jest.mock('dayjs', () => {
     format: () => {
       const lang = sessionStorage.getItem('rsdk_locale')?.substring(0, 2) || 'en';
       const date = actualDayjs(dateString);
-      const options: Intl.DateTimeFormatOptions = {day: 'numeric', month: 'long', year: 'numeric'};
+      const options: Intl.DateTimeFormatOptions = {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      };
       return new Intl.DateTimeFormat(`${lang}-GB`, options).format(date.toDate());
-    },
+    }
   });
   mockDayjs.locale = jest.fn();
   return mockDayjs;
 });
 
-const sampleData: Array<PaymentHistoryListData> = [
-        { ExpectedCreditingDate: '20240627', Amount: -200.9 },
-        { ExpectedCreditingDate: '20240527', Amount: 99.9 },
-        { ExpectedCreditingDate: '20240427', Amount: 300.0 },
-        { ExpectedCreditingDate: '20240327', Amount: -150.5 },
-        { ExpectedCreditingDate: '20240227', Amount: 100.0 },
-        { ExpectedCreditingDate: '20240127', Amount: 300.0 },
-        { ExpectedCreditingDate: '20231227', Amount: 100.8 }
+const sampleData: PaymentHistoryListData[] = [
+  { ExpectedCreditingDate: '20240627', Amount: -200.9 },
+  { ExpectedCreditingDate: '20240527', Amount: 99.9 },
+  { ExpectedCreditingDate: '20240427', Amount: 300.0 },
+  { ExpectedCreditingDate: '20240327', Amount: -150.5 },
+  { ExpectedCreditingDate: '20240227', Amount: 100.0 },
+  { ExpectedCreditingDate: '20240127', Amount: 300.0 },
+  { ExpectedCreditingDate: '20231227', Amount: 100.8 }
 ];
 
 const englishDateTestCases = [
@@ -60,14 +64,14 @@ const amountTestCases = [
 describe('PaymentHistoryTable', () => {
   test('Renders table captions', () => {
     render(<PaymentHistoryTable paymentList={sampleData} />);
-    expect(screen.getByText("PAYMENT_HISTORY_RECENT_PAYMENTS")).toBeInTheDocument();
-    expect(screen.getByText("PAYMENT_HISTORY_MOST_RECENT_PAYMENTS")).toBeInTheDocument();
+    expect(screen.getByText('PAYMENT_HISTORY_RECENT_PAYMENTS')).toBeInTheDocument();
+    expect(screen.getByText('PAYMENT_HISTORY_MOST_RECENT_PAYMENTS')).toBeInTheDocument();
   });
 
   test('Renders table headers', () => {
     render(<PaymentHistoryTable paymentList={sampleData} />);
-    expect(screen.getByText("DATE")).toBeInTheDocument();
-    expect(screen.getByText("POE_LABEL_AMOUNT")).toBeInTheDocument();
+    expect(screen.getByText('DATE')).toBeInTheDocument();
+    expect(screen.getByText('POE_LABEL_AMOUNT')).toBeInTheDocument();
   });
 
   test('Renders the first five payments', () => {
@@ -77,7 +81,7 @@ describe('PaymentHistoryTable', () => {
     expect(rows).toHaveLength(6);
   });
 
-  test.each(englishDateTestCases) (
+  test.each(englishDateTestCases)(
     'Renders the payment date %s formatted as %s in English',
     (inputDate, expectedDate) => {
       render(<PaymentHistoryTable paymentList={sampleData} />);
@@ -85,7 +89,7 @@ describe('PaymentHistoryTable', () => {
     }
   );
 
-  test.each(amountTestCases) (
+  test.each(amountTestCases)(
     'Renders the payment amount %d in the expected format %s',
     (inputAmount, expectedAmount) => {
       render(<PaymentHistoryTable paymentList={sampleData} />);

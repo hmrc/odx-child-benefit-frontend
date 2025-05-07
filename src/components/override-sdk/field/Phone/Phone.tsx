@@ -8,10 +8,7 @@ interface InputProps {
 }
 
 export default function Phone(props) {
-  const {
-    onChange,
-    autocomplete
-  } = props;
+  const { onChange, autocomplete } = props;
 
   const handleChange = inputVal => {
     let phoneValue = inputVal && inputVal.replace(/\D+/g, '');
@@ -21,7 +18,7 @@ export default function Phone(props) {
 
   const inputProps: InputProps = {
     type: 'tel',
-    onChange: handleChange,
+    onChange: handleChange
   };
 
   // Conditionally add the autocomplete prop if it's not blank
@@ -29,11 +26,5 @@ export default function Phone(props) {
     inputProps.autoComplete = autocomplete;
   }
 
-  return (
-
-    <TextInput
-      {...props}
-      inputProps={inputProps}
-    />
-  );
+  return <TextInput {...props} inputProps={inputProps} />;
 }

@@ -7,20 +7,20 @@ import { getSdkConfig, sdkIsLoggedIn } from '@pega/auth/lib/sdk-auth-manager';
 import AppHeader from '../../components/AppComponents/AppHeader';
 import AppFooter from '../../components/AppComponents/AppFooter';
 import AppContext from './reuseables/AppContext';
-import ShutterServicePage from '../../components/AppComponents/ShutterService/ShutterServicePage';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useStartMashup } from '../EducationStart/reuseables/PegaSetup';
 import { loginIfNecessary } from '@pega/auth/lib/sdk-auth-manager';
 import useTimeoutTimer from '../../components/helpers/hooks/useTimeoutTimer';
 import {
   initTimeout,
-  settingTimer,
+  settingTimerConfig,
   staySignedIn
 } from '../../components/AppComponents/TimeoutPopup/timeOutUtils';
 import { triggerLogout } from '../../components/helpers/utils';
 import useHMRCExternalLinks from '../../components/helpers/hooks/HMRCExternalLinks';
-import { loadBundles } from '../../components/helpers/languageToggleHelper';
 import TimeoutPopup from '../../components/AppComponents/TimeoutPopup';
+import LanguageToggle from '../../components/AppComponents/LanguageToggle';
+import ShutterServicePageWrapper from '../../components/AppComponents/ShutterService/ShutteredServiceWrapper';
 
 const HighIncomeCase: FunctionComponent<any> = () => {
   const [showLandingPage, setShowLandingPage] = useState<boolean>(true);
@@ -41,12 +41,12 @@ const HighIncomeCase: FunctionComponent<any> = () => {
   });
 
   const { t } = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { hmrcURL } = useHMRCExternalLinks();
   registerServiceName(t('HICBC_APP_NAME'));
 
   function doRedirectDone() {
-    history.replace('/hicbc/opt-in');
+    navigate('/hicbc/opt-in');
     // appName and mainRedirect params have to be same as earlier invocation
     loginIfNecessary({
       appName: 'ChB',
@@ -54,17 +54,28 @@ const HighIncomeCase: FunctionComponent<any> = () => {
     });
   }
 
-  const { showPega, setShowPega, showResolutionPage, caseId, renderRootComponent, rootProps } =
-    useStartMashup(doRedirectDone, { appBacklinkProps: {} });
+  const {
+    showPega,
+    setShowPega,
+    showResolutionPage,
+    caseId,
+    renderRootComponent,
+    rootProps,
+    assignmentPConnect
+  } = useStartMashup(doRedirectDone, {
+    appBacklinkProps: {}
+  });
 
   const startClaim = () => {
     setShowPega(true);
     PCore.getMashupApi().createCase('HMRC-ChB-Work-HICBCPreference', PCore.getConstants().APP.APP);
   };
   const landingPageProceedHandler = () => {
-    localStorage.setItem('showLandingPage', 'false');
-    setShowLandingPage(false);
-    startClaim();
+    if (assignmentPConnect) {
+      localStorage.setItem('showLandingPage', 'false');
+      setShowLandingPage(false);
+      startClaim();
+    }
   };
 
   useEffect(() => {
@@ -101,7 +112,7 @@ const HighIncomeCase: FunctionComponent<any> = () => {
               'languageToggleTriggered',
               'summarypageLanguageChange'
             );
-            const summaryData: Array<any> =
+            const summaryData: any[] =
               response.data.data.caseInfo.content.ScreenContent.LocalisedContent;
             /* const summaryData={
                   en:{content:'English content', title: 'English Title', banner:null},
@@ -151,12 +162,9 @@ const HighIncomeCase: FunctionComponent<any> = () => {
             },
             'showStartPageOnCloseContainerItem'
           );
-
-          // Preloading bundles for language toggle
-          loadBundles(sessionStorage.getItem('rsdk_locale') || 'en_GB');
         }
       });
-      settingTimer();
+      settingTimerConfig();
     });
 
     return () => {
@@ -174,10 +182,6 @@ const HighIncomeCase: FunctionComponent<any> = () => {
       triggerLogout();
     }
   }
-
-  // useEffect(() => {
-  //   loadBundles(sessionStorage.getItem('rsdk_locale') || 'en_GB');
-  // }, []);
 
   // Function to force re-render the pega Root component
   const forceRefreshRootComponent = () => {
@@ -206,67 +210,55 @@ const HighIncomeCase: FunctionComponent<any> = () => {
     staySignedIn(setShowTimeoutModal, 'D_ClaimantSubmittedChBCases', null, null);
   };
 
-  if (shuttered === null) {
-    return null;
-  } else if (shuttered) {
-    setPageTitle();
-    return (
+  return (
+    sdkIsLoggedIn() && (
       <>
-        <AppHeader appname={t('HICBC_APP_NAME')} hasLanguageToggle={false} />
-        <div className='govuk-width-container'>
-          <ShutterServicePage />
-        </div>
+        <AppHeader
+          handleSignout={handleSignout}
+          appname={t('HICBC_APP_NAME')}
+          serviceLink='hicbc/opt-in'
+          betafeedbackurl={`${hmrcURL}contact/beta-feedback?service=463&referrerUrl=${window.location}`}
+        />
+        <ShutterServicePageWrapper serviceIsShuttered={shuttered}>
+          <>
+            <TimeoutPopup
+              show={showTimeoutModal}
+              staySignedinHandler={() => {
+                setShowTimeoutModal(false);
+                initTimeout(setShowTimeoutModal, false, true, false);
+                // Using operator details call as 'app agnostic' session keep-alive
+                PCore.getUserApi().getOperatorDetails(
+                  PCore.getEnvironmentInfo().getOperatorIdentifier()
+                );
+              }}
+              signoutHandler={triggerLogout}
+              isAuthorised
+            />
+            <AppContext.Provider value={{ appBacklinkProps: {}, showLanguageToggle }}>
+              <div className='govuk-width-container'>
+                {showLanguageToggle && <LanguageToggle />}
+                <div id='pega-part-of-page'>
+                  <div id='pega-root'></div>
+                </div>
+                {showLandingPage ? (
+                  <LandingPage onProceedHandler={() => landingPageProceedHandler()} />
+                ) : (
+                  <ClaimPage
+                    showSignoutModal={showSignoutModal}
+                    setShowSignoutModal={setShowSignoutModal}
+                    currentDisplay={currentDisplay}
+                    summaryPageContent={summaryPageContent}
+                    handleStaySignIn={handleStaySignIn}
+                    showTimeoutModal={showTimeoutModal}
+                  />
+                )}
+              </div>
+            </AppContext.Provider>
+          </>
+        </ShutterServicePageWrapper>
         <AppFooter />
       </>
-    );
-  } else {
-    return (
-      sdkIsLoggedIn() && (
-        <>
-          <AppHeader
-            handleSignout={handleSignout}
-            appname={t('HICBC_APP_NAME')}
-            hasLanguageToggle={showLanguageToggle}
-            betafeedbackurl={`${hmrcURL}contact/beta-feedback?service=463&referrerUrl=${window.location}`}
-          />
-          <TimeoutPopup
-            show={showTimeoutModal}
-            staySignedinHandler={() => {
-              setShowTimeoutModal(false);
-              initTimeout(setShowTimeoutModal, false, true, false);
-              // Using operator details call as 'app agnostic' session keep-alive
-              PCore.getUserApi().getOperatorDetails(
-                PCore.getEnvironmentInfo().getOperatorIdentifier()
-              );
-            }}
-            signoutHandler={triggerLogout}
-            isAuthorised
-            signoutButtonText={t('SIGN-OUT')}
-            staySignedInButtonText={t('STAY_SIGNED_IN')}
-          />
-          <AppContext.Provider value={{ appBacklinkProps: {}, showLanguageToggle }}>
-            <div className='govuk-width-container'>
-              <div id='pega-part-of-page'>
-                <div id='pega-root'></div>
-              </div>
-              {showLandingPage ? (
-                <LandingPage onProceedHandler={() => landingPageProceedHandler()} />
-              ) : (
-                <ClaimPage
-                  showSignoutModal={showSignoutModal}
-                  setShowSignoutModal={setShowSignoutModal}
-                  currentDisplay={currentDisplay}
-                  summaryPageContent={summaryPageContent}
-                  handleStaySignIn={handleStaySignIn}
-                  showTimeoutModal={showTimeoutModal}
-                />
-              )}
-            </div>
-          </AppContext.Provider>
-          <AppFooter />
-        </>
-      )
-    );
-  }
+    )
+  );
 };
 export default HighIncomeCase;

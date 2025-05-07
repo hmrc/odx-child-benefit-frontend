@@ -25,7 +25,6 @@ const renderField = resolvedProps => {
       ''
     );
 
-
   if (label === 'Service Date')
     val = <DateInput value={value} style={{ fontSize: '14px' }}></DateInput>;
 
@@ -37,7 +36,6 @@ const renderField = resolvedProps => {
 
   if (label === 'Phone Number')
     val = <CosmosPhone value={value} style={{ fontSize: '14px' }}></CosmosPhone>;
-
 
   if (variant === 'inline') {
     val = value || <span aria-hidden='true'>&ndash;&ndash;</span>;
@@ -51,7 +49,7 @@ const renderField = resolvedProps => {
   return <FieldValueList variant={variant} fields={[{ name: label, value: val }]} />;
 };
 
-
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const baseHmrcOdxGdsSummaryCard = () => {
   const props = {
     template: 'DefaultForm',

@@ -6,12 +6,12 @@ import PropTypes from 'prop-types';
 export default function HmrcOdxCheckAnswers(props) {
   const { children } = props;
 
-  const [formElms, setFormElms] = useState<Array<React.ReactElement>>([]);
+  const [formElms, setFormElms] = useState<React.ReactElement[]>([]);
 
   props.getPConnect().setInheritedProp('partOfCheckAnswers', true);
 
   useEffect(() => {
-    const elms: Array<React.ReactElement> = [];
+    const elms: React.ReactElement[] = [];
     const region = children[0] ? children[0].props.getPConnect() : null;
     if (region?.getChildren()) {
       region.getChildren().forEach(child => {
@@ -25,9 +25,7 @@ export default function HmrcOdxCheckAnswers(props) {
   return (
     <div>
       {formElms.map((field, index) => {
-        const key = `${field?.props?.inheritedProps
-          ?.find(prop => prop.prop === 'label')
-          .value.replace(/ /g, '_')}_${index}`;
+        const key = `${field?.props?.inheritedProps?.find(prop => prop.prop === 'label').value.replace(/ /g, '_')}_${index}`;
 
         return <Fragment key={key}>{field}</Fragment>;
       })}

@@ -38,5 +38,6 @@ export const addDeviceIdCookie = async (): Promise<void> => {
   }
 
   setCookie(COOKIE_PEGAODXDI, deviceID, 3650);
+  // @ts-ignore
   PCore.getRestClient().getHeaderProcessor().registerHeader('deviceid', deviceID);
 };

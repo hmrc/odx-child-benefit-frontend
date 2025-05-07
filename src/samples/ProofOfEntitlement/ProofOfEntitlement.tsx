@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import { getSdkConfig, loginIfNecessary, sdkIsLoggedIn } from '@pega/auth/lib/sdk-auth-manager';
+import { Link, useNavigate } from 'react-router-dom';
+import { loginIfNecessary, sdkIsLoggedIn } from '@pega/auth/lib/sdk-auth-manager';
 import AppHeader from '../../components/AppComponents/AppHeader';
 import AppFooter from '../../components/AppComponents/AppFooter';
 import ReadOnlyDisplay from '../../components/BaseComponents/ReadOnlyDisplay/ReadOnlyDisplay';
@@ -14,9 +14,9 @@ import MainWrapper from '../../components/BaseComponents/MainWrapper';
 import useHMRCExternalLinks from '../../components/helpers/hooks/HMRCExternalLinks';
 import TimeoutPopup from '../../components/AppComponents/TimeoutPopup';
 import { initTimeout } from '../../components/AppComponents/TimeoutPopup/timeOutUtils';
-import { TIMEOUT_115_SECONDS } from '../../components/helpers/constants';
 import LoadingWrapper from '../../components/AppComponents/LoadingSpinner/LoadingWrapper';
 import { addDeviceIdCookie } from '../../components/helpers/cookie';
+import LanguageToggle from '../../components/AppComponents/LanguageToggle';
 
 declare const PCore;
 declare const myLoadMashup: any;
@@ -26,17 +26,16 @@ export default function ProofOfEntitlement() {
   const [showNoAward, setShowNoAward] = useState(false);
   const [showProblemWithService, setShowProblemWithService] = useState(false);
   const [showTimeoutModal, setShowTimeoutModal] = useState(false);
-  const [millisecondsTillSignout, setmillisecondsTillSignout] = useState(TIMEOUT_115_SECONDS);
   const [pageContentReady, setPageContentReady] = useState(false);
 
   const { hmrcURL, referrerURL } = useHMRCExternalLinks();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
   registerServiceName(t('CHB_HOMEPAGE_HEADING'));
 
   const onRedirectDone = () => {
-    history.replace('/view-proof-entitlement');
+    navigate('/view-proof-entitlement');
     // appName and mainRedirect params have to be same as earlier invocation
     loginIfNecessary({ appName: 'ChB', mainRedirect: true });
   };
@@ -45,44 +44,47 @@ export default function ProofOfEntitlement() {
     initTimeout(setShowTimeoutModal, false, true, false);
   }, []);
 
+  async function fetchPOEData() {
+    PCore.getDataPageUtils()
+      .getPageDataAsync('D_GetChBEntitlement', 'root')
+      .then(result => {
+        // If no claimant data in response, assume no award (or api error)
+        if (result.IsAPIError) {
+          setShowProblemWithService(true);
+        } else if (!result.HasAward) {
+          if (result.CanAccess) {
+            // Award can still be viewed for 5 years after end date
+            setEntitlementData(result);
+          } else {
+            // Award ended over 5 years ago
+            setShowNoAward(true);
+          }
+        } else {
+          // User has active child benefit
+          setEntitlementData(result);
+        }
+        setPageContentReady(true);
+        setPageTitle();
+      })
+      .catch(() => {
+        setShowProblemWithService(true);
+        setPageTitle();
+      });
+  }
+
   useEffect(() => {
     if (!sdkIsLoggedIn()) {
       loginIfNecessary({ appName: 'ChB', mainRedirect: true, redirectDoneCB: onRedirectDone });
     }
+    if (window.PCore) {
+      fetchPOEData();
+    }
+
     document.addEventListener('SdkConstellationReady', () => {
       myLoadMashup('pega-root', false);
       PCore.onPCoreReady(async () => {
-        getSdkConfig().then(config => {
-          if (config.timeoutConfig.secondsTilLogout) {
-            setmillisecondsTillSignout(config.timeoutConfig.secondsTilLogout * 1000);
-          }
-        });
         await addDeviceIdCookie();
-        PCore.getDataPageUtils()
-          .getPageDataAsync('D_GetChBEntitlement', 'root')
-          .then(result => {
-            // If no claimant data in response, assume no award (or api error)
-            if (result.IsAPIError) {
-              setShowProblemWithService(true);
-            } else if (!result.HasAward) {
-              if (result.CanAccess) {
-                // Award can still be viewed for 5 years after end date
-                setEntitlementData(result);
-              } else {
-                // Award ended over 5 years ago
-                setShowNoAward(true);
-              }
-            } else {
-              // User has active child benefit
-              setEntitlementData(result);
-            }
-            setPageContentReady(true);
-            setPageTitle();
-          })
-          .catch(() => {
-            setShowProblemWithService(true);
-            setPageTitle();
-          });
+        fetchPOEData();
       });
 
       // getPDFContent();
@@ -97,7 +99,6 @@ export default function ProofOfEntitlement() {
     <>
       <AppHeader
         appname={t('CHB_HOMEPAGE_HEADING')}
-        hasLanguageToggle
         betafeedbackurl={`${hmrcURL}contact/beta-feedback?service=463&referrerUrl=${window.location}`}
         handleSignout={handleSignout}
       />
@@ -111,15 +112,13 @@ export default function ProofOfEntitlement() {
         }}
         signoutHandler={triggerLogout}
         isAuthorised
-        signoutButtonText={t('SIGN-OUT')}
-        staySignedInButtonText={t('STAY_SIGNED_IN')}
-        millisecondsTillSignout={millisecondsTillSignout}
       />
       <LoadingWrapper
         pageIsLoading={!pageContentReady}
         spinnerProps={{ bottomText: t('LOADING'), size: '30px', label: t('LOADING') }}
       >
         <div className='govuk-width-container' id='poe-page'>
+          <LanguageToggle />
           <MainWrapper>
             {entitlementData && (
               <>
@@ -177,7 +176,6 @@ export default function ProofOfEntitlement() {
                   </a>
                   {t('PROOF_ENTITLMENT_IF_DETAILS_INCORRECT_WILL_UPDATE')}
                 </p>
-
                 <dl className='govuk-summary-list page-break-after'>
                   <ReadOnlyDisplay
                     key='name'
@@ -200,9 +198,7 @@ export default function ProofOfEntitlement() {
                   <ReadOnlyDisplay
                     key='startdate'
                     label={t('POE_LABEL_START_DATE')}
-                    value={`${entitlementData.IsMigrated ? `${t('ON_OR_BEFORE')} ` : ''}${dayjs(
-                      entitlementData.AwardStart
-                    ).format('D MMMM YYYY')}`}
+                    value={`${entitlementData.IsMigrated ? `${t('ON_OR_BEFORE')} ` : ''}${dayjs(entitlementData.AwardStart).format('D MMMM YYYY')}`}
                   />
                   <ReadOnlyDisplay
                     key='enddate'
@@ -210,7 +206,6 @@ export default function ProofOfEntitlement() {
                     value={dayjs(entitlementData.AwardEnd).format('D MMMM YYYY')}
                   />
                 </dl>
-
                 {entitlementData.Children?.map(childData => {
                   return (
                     <React.Fragment key={childData?.pyFullName}>
@@ -226,9 +221,7 @@ export default function ProofOfEntitlement() {
                         <ReadOnlyDisplay
                           key={`${childData?.pyFullName} start`}
                           label={t('POE_LABEL_START_DATE')}
-                          value={`${childData.IsMigrated ? `${t('ON_OR_BEFORE')} ` : ''}${dayjs(
-                            childData.EligibilityStart
-                          ).format('D MMMM YYYY')}`}
+                          value={`${childData.IsMigrated ? `${t('ON_OR_BEFORE')} ` : ''}${dayjs(childData.EligibilityStart).format('D MMMM YYYY')}`}
                         />
                         <ReadOnlyDisplay
                           key={`${childData?.pyFullName} end`}
@@ -239,13 +232,18 @@ export default function ProofOfEntitlement() {
                     </React.Fragment>
                   );
                 })}
-
                 <h2 className='govuk-heading-m print-hidden'>
                   {t('PROOF_ENTITLEMENT_VIEW_YOUR_PAYMENTS_H2')}
                 </h2>
-                <a href={`${referrerURL}view-payment-history`} className='govuk-link print-hidden'>
-                  {t('PROOF_ENTITLEMENT_VIEW_PAST_PAYMENTS_LINK')}
-                </a>
+                <p className='govuk-body'>
+                  <Link
+                    to={`${referrerURL}view-payment-history`}
+                    className='govuk-link print-hidden'
+                  >
+                    {t('PROOF_ENTITLEMENT_VIEW_PAST_PAYMENTS_LINK')}
+                  </Link>
+                  .
+                </p>
               </>
             )}
             {showNoAward && <NoAwardPage />}

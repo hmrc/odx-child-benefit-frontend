@@ -41,8 +41,6 @@ describe('LogoutPopup Component', () => {
     fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
     expect(hideModalMock).toHaveBeenCalledTimes(1);
     expect(handleStaySignInMock).toHaveBeenCalledTimes(1);
-
-
   });
   test('Does not close the popup when another key is pressed', () => {
     fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Shift' });

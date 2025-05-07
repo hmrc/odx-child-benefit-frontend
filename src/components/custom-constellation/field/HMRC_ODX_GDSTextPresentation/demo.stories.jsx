@@ -10,8 +10,8 @@ export default {
   component: HmrcOdxGdsTextPresentation
 };
 
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const baseHmrcOdxGdsTextPresentation = () => {
-
   const props = {
     value: configProps.value,
     placeholder: configProps.placeholder,
@@ -28,21 +28,29 @@ export const baseHmrcOdxGdsTextPresentation = () => {
         },
         getActionsApi: () => {
           return {
-            updateFieldValue: () => {/* nothing */},
-            triggerFieldChange: () => {/* nothing */}
+            updateFieldValue: () => {
+              /* nothing */
+            },
+            triggerFieldChange: () => {
+              /* nothing */
+            }
           };
         },
-        ignoreSuggestion: () => {/* nothing */},
-        acceptSuggestion: () => {/* nothing */},
-        setInheritedProps: () => {/* nothing */},
-        resolveConfigProps: () => {/* nothing */}
+        ignoreSuggestion: () => {
+          /* nothing */
+        },
+        acceptSuggestion: () => {
+          /* nothing */
+        },
+        setInheritedProps: () => {
+          /* nothing */
+        },
+        resolveConfigProps: () => {
+          /* nothing */
+        }
       };
     }
   };
 
-  return (
-    <>
-      <HmrcOdxGdsTextPresentation {...props} />
-    </>
-  );
+  return <HmrcOdxGdsTextPresentation {...props} />;
 };

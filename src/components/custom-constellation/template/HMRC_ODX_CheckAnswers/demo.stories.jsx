@@ -25,15 +25,17 @@ const renderField = resolvedProps => {
       ''
     );
 
+  if (label === 'Service Date')
+    val = <DateInput value={value} style={{ fontSize: '14px' }}></DateInput>;
 
-  if (label === 'Service Date') val = <DateInput value={value} style={{ fontSize: '14px' }}></DateInput>;
-
-  if (label === 'Email') val = <Input type='email' value={value} style={{ fontSize: '14px' }}></Input>;
+  if (label === 'Email')
+    val = <Input type='email' value={value} style={{ fontSize: '14px' }}></Input>;
 
   if (label === 'First Name' || label === 'Last Name' || label === 'Middle Name')
     val = <Input value={value} style={{ fontSize: '14px' }}></Input>;
 
-  if (label === 'Phone Number') val = <CosmosPhone value={value} style={{ fontSize: '14px' }}></CosmosPhone>;
+  if (label === 'Phone Number')
+    val = <CosmosPhone value={value} style={{ fontSize: '14px' }}></CosmosPhone>;
 
   if (variant === 'inline') {
     val = value || <span aria-hidden='true'>&ndash;&ndash;</span>;
@@ -47,7 +49,7 @@ const renderField = resolvedProps => {
   return <FieldValueList variant={variant} fields={[{ name: label, value: val }]} />;
 };
 
-
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const baseHmrcOdxCheckAnswers = () => {
   const props = {
     NumCols: 1,
@@ -82,9 +84,5 @@ export const baseHmrcOdxCheckAnswers = () => {
     return props.getPConnect().createComponent(child);
   });
 
-  return (
-      <>
-        <HmrcOdxCheckAnswers {...props}>{regionAChildren}</HmrcOdxCheckAnswers>
-      </>
-  );
+  return <HmrcOdxCheckAnswers {...props}>{regionAChildren}</HmrcOdxCheckAnswers>;
 };

@@ -14,12 +14,13 @@ import LogoutPopup from '../../components/AppComponents/LogoutPopup';
 import SummaryPage from '../../components/AppComponents/SummaryPage';
 import {
   initTimeout,
-  settingTimer,
+  settingTimerConfig,
   staySignedIn
 } from '../../components/AppComponents/TimeoutPopup/timeOutUtils';
 import { useStartMashup } from './reuseables/PegaSetup';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import AppHeader from '../../components/AppComponents/AppHeader';
+import LanguageToggle from '../../components/AppComponents/LanguageToggle';
 
 const EducationStartCase: FunctionComponent<any> = () => {
   const { t } = useTranslation();
@@ -57,7 +58,7 @@ const EducationStartCase: FunctionComponent<any> = () => {
   const [pConnect, setPconnect] = useState(null);
 
   const { hmrcURL } = useHMRCExternalLinks();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   registerServiceName(t('EDUCATION_START'));
 
@@ -66,7 +67,7 @@ const EducationStartCase: FunctionComponent<any> = () => {
   }, []);
 
   function doRedirectDone() {
-    history.replace('/education/start');
+    navigate('/education/start');
     // appName and mainRedirect params have to be same as earlier invocation
     loginIfNecessary({ appName: 'ChB', mainRedirect: true });
   }
@@ -82,7 +83,9 @@ const EducationStartCase: FunctionComponent<any> = () => {
     assignmentPConnect,
     assignmentCancelled,
     setAssignmentCancelled,
-    containerClosed
+    containerClosed,
+    renderRootComponent,
+    rootProps
   } = useStartMashup(doRedirectDone, {
     appBacklinkProps: {},
     serviceParam: educationStartParam,
@@ -192,6 +195,24 @@ const EducationStartCase: FunctionComponent<any> = () => {
     });
   }
 
+  function returnedToPortalAppNameClick(showBanner = false) {
+    closeContainer();
+    setShowPega(false);
+    setCurrentDisplay('landingpage');
+    setShowPortalBanner(showBanner);
+    setAssignmentCancelled(false);
+    setStartClaimClicked(false);
+    setSummaryPageContent({
+      content: null,
+      title: null,
+      banner: null
+    });
+    const sessionFlag = sessionStorage.getItem('isStartClaimPage');
+    if (sessionFlag) {
+      sessionStorage.removeItem('isStartClaimPage');
+    }
+  }
+
   useEffect(() => {
     if (assignmentCancelled) {
       // user clicked save and come back later link
@@ -252,7 +273,7 @@ const EducationStartCase: FunctionComponent<any> = () => {
               'languageToggleTriggered',
               'summarypageLanguageChange'
             );
-            const summaryData: Array<any> =
+            const summaryData: any[] =
               response.data.data.caseInfo.content.ScreenContent.LocalisedContent;
             const currentLang =
               sessionStorage.getItem('rsdk_locale')?.slice(0, 2).toUpperCase() || 'EN';
@@ -321,6 +342,7 @@ const EducationStartCase: FunctionComponent<any> = () => {
         'HMRC-ChB-Work-EducationStart',
         PCore.getConstants().APP.APP,
         {
+          // @ts-ignore
           startingFields,
           pageName: '',
           channelName: ''
@@ -348,7 +370,7 @@ const EducationStartCase: FunctionComponent<any> = () => {
           );
         }
       });
-      settingTimer();
+      settingTimerConfig();
       PCore.getStore().subscribe(() =>
         staySignedIn(
           setShowTimeoutModal,
@@ -386,16 +408,36 @@ const EducationStartCase: FunctionComponent<any> = () => {
     });
   }, []);
 
+  // Function to force re-render the pega Root component
+  const forceRefreshRootComponent = () => {
+    renderRootComponent();
+  };
+
+  useEffect(() => {
+    if (Object.keys(rootProps).length) {
+      PCore.getPubSubUtils().subscribe(
+        'forceRefreshRootComponent',
+        forceRefreshRootComponent,
+        'forceRefreshRootComponent'
+      );
+    }
+    return () => {
+      PCore?.getPubSubUtils().unsubscribe('forceRefreshRootComponent', 'forceRefreshRootComponent');
+    };
+  }, [rootProps]);
+
   if (currentDisplay === 'servicenotavailable') {
     return (
       <>
         <AppHeader
           appname={t('EDUCATION_START')}
-          hasLanguageToggle={showLanguageToggleState}
           handleSignout={handleSignout}
           betafeedbackurl={`${hmrcURL}contact/beta-feedback?service=claim-child-benefit-frontend&backUrl=/fill-online/claim-child-benefit/recently-claimed-child-benefit`}
+          serviceLink='education/start'
+          appNameClick={returnedToPortalAppNameClick}
         />
         <div className='govuk-width-container'>
+          {showLanguageToggleState && <LanguageToggle />}
           <ServiceNotAvailable returnToPortalPage={returnToPortalPage} />
         </div>
         <AppFooter />
@@ -425,29 +467,16 @@ const EducationStartCase: FunctionComponent<any> = () => {
             )
           }
           signoutHandler={triggerLogout}
-          isAuthorised={false}
-          staySignedInButtonText={t('STAY_SIGNED_IN')}
-          signoutButtonText={t('SIGN-OUT')}
-        >
-          <h1 id='hmrc-timeout-heading' className='govuk-heading-m push--top'>
-            {t('YOURE_ABOUT_TO_BE_SIGNED_OUT')}
-          </h1>
-          <p className='govuk-body hmrc-timeout-dialog__message'>
-            {' '}
-            {/* Todo Aria-hidden will be added back with US-13474 implementation */}
-            {t('FOR_YOUR_SECURITY_WE_WILL_SIGN_YOU_OUT')}{' '}
-            <span id='hmrc-timeout-countdown' className='hmrc-timeout-dialog__countdown'>
-              {t('2_MINUTES')}
-            </span>
-            .
-          </p>
-        </TimeoutPopup>
+          isAuthorised
+        />
         <AppHeader
           handleSignout={handleSignout}
           appname={t('EDUCATION_START')}
-          hasLanguageToggle={showLanguageToggleState}
+          serviceLink='education/start'
+          appNameClick={returnedToPortalAppNameClick}
         />
         <div className='govuk-width-container'>
+          {showLanguageToggleState && <LanguageToggle />}
           {currentDisplay === 'shutterpage' ? (
             <ShutterServicePage />
           ) : (

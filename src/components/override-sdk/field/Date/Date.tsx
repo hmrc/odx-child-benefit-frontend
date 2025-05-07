@@ -77,7 +77,8 @@ export default function Date(props) {
         DateErrorFormatter(
           validatemessage,
           getPConnect().resolveConfigProps(getPConnect().getMetadata().config).label
-        )
+        ),
+        ''
       )
     );
     const errorTargets = DateErrorTargetFields(validatemessage);
@@ -152,10 +153,10 @@ export default function Date(props) {
     return <ReadOnlyDisplay label={label} value={dayjs(value).format('D MMMM YYYY')} />;
   }
 
-  const extraProps = { testProps: { 'data-test-id': testId } };
+  const extraProps: any = { testProps: { 'data-test-id': testId } };
 
   if (configAlternateDesignSystem?.autocomplete) {
-    extraProps['autoComplete'] = configAlternateDesignSystem.autocomplete;
+    extraProps.autoComplete = configAlternateDesignSystem.autocomplete;
   }
 
   return (

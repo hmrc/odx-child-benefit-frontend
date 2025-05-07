@@ -12,7 +12,7 @@ export default function HmrcOdxGdsSummaryCard(props) {
   const [pageReference, setPageReference] = useState('');
   const { t } = useTranslation();
   const nCols = parseInt(NumCols, 8);
-  const [formElms, setFormElms] = useState<Array<ReactNode>>([]); // Initialize as an empty array of React Nodes
+  const [formElms, setFormElms] = useState<ReactNode[]>([]); // Initialize as an empty array of React Nodes
   let itemName = '';
   switch (useType) {
     case '1':
@@ -40,8 +40,8 @@ export default function HmrcOdxGdsSummaryCard(props) {
   }, []);
 
   useEffect(() => {
-    const elms: Array<string> = [];
-    let finalELms: Array<string> = [];
+    const elms: string[] = [];
+    let finalELms: string[] = [];
     const region = children[0] ? children[0].props.getPConnect() : null;
     setPageReference(region.getPageReference());
     if (region?.getChildren()) {

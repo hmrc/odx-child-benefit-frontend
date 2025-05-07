@@ -34,7 +34,7 @@ export default function Checkboxes(props) {
               item={item}
               index={index}
               name={item.name}
-              inputProps={...inputProps}
+              inputProps={inputProps}
               onChange={evt => {
                 item.onChange(evt);
                 if (exclusiveOption) {
@@ -54,7 +54,7 @@ export default function Checkboxes(props) {
               item={exclusiveOption}
               index={optionsList.length}
               name={exclusiveOption.name}
-              inputProps={...inputProps}
+              inputProps={inputProps}
               onChange={evt => {
                 exclusiveOption.onChange(evt);
                 onExclusiveClick(optionsList.length);

@@ -4,7 +4,13 @@ import { registerNonEditableField } from '../../../helpers/hooks/QuestionDisplay
 import InstructionComp from '../../../helpers/formatters/ParsedHtml';
 
 interface SimpleTableManualProps extends PConnProps {
-  referenceList?: [any];
+  referenceList?: {
+    FullName: string;
+    Age: number;
+    ClaimEndDate: string;
+    Language?: string;
+    Content?: string;
+  }[];
   label?: string;
   showLabel?: boolean;
   propertyLabel?: string;
@@ -14,13 +20,13 @@ interface SimpleTableManualProps extends PConnProps {
 export default function SimpleTableManual(props: PropsWithChildren<SimpleTableManualProps>) {
   const {
     getPConnect,
-    referenceList = [], // if referenceList not in configProps$, default to empy list
+    referenceList = [], // if referenceList not in configProps$, default to empty list
     children,
     label: labelProp,
     propertyLabel,
     showLabel
   } = props;
-  
+
   const LocaleRefLocation = PCore.getStoreValue('localeReference', '', 'app');
   const localizedVal = PCore.getLocaleUtils().getLocaleValue;
   const label = labelProp || propertyLabel;
@@ -43,14 +49,15 @@ export default function SimpleTableManual(props: PropsWithChildren<SimpleTableMa
       },
       subId
     );
-  }, []);
+  }, [label]);
 
   if (props.authorContext === '.LocalisedContent') {
     registerNonEditableField();
     return (
       <InstructionComp
         htmlString={
-          referenceList.find(element => element.Language === currentLang.toUpperCase()).Content
+          referenceList.find(element => element.Language === currentLang.toUpperCase())?.Content ||
+          ''
         }
       />
     );
@@ -60,12 +67,12 @@ export default function SimpleTableManual(props: PropsWithChildren<SimpleTableMa
     return (
       <tr className='govuk-table__row'>
         {list.map((item, index) => {
+          const compoundKey = `${item}-${index}`;
           return (
             <th
+              key={compoundKey}
               scope='col'
-              className={`govuk-table__header ${
-                index ? 'govuk-!-width-one-quarter' : 'govuk-!-width-one-half'
-              }`}
+              className={`govuk-table__header ${index ? 'govuk-!-width-one-quarter' : 'govuk-!-width-one-half'}`}
             >
               {item}
             </th>
@@ -84,17 +91,16 @@ export default function SimpleTableManual(props: PropsWithChildren<SimpleTableMa
       )}
       <thead className='govuk-table__head'>{renderTh(headingList)}</thead>
       <tbody className='govuk-table__body'>
-        {referenceList?.map(item => {
-          return (
-            <tr className='govuk-table__row'>
-              <th scope='row' className='govuk-table__header'>
-                {item.FullName}
-              </th>
-              <td className='govuk-table__cell'>{item.Age}</td>
-              <td className='govuk-table__cell'>{item.ClaimEndDate}</td>
-            </tr>
-          );
-        })}
+        {referenceList?.map((item, index) => (
+          // eslint-disable-next-line react/no-array-index-key
+          <tr key={index} className='govuk-table__row'>
+            <th scope='row' className='govuk-table__header'>
+              {item.FullName}
+            </th>
+            <td className='govuk-table__cell'>{item.Age}</td>
+            <td className='govuk-table__cell'>{item.ClaimEndDate}</td>
+          </tr>
+        ))}
       </tbody>
     </table>
   );

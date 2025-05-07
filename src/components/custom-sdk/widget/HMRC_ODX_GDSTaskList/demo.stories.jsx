@@ -98,9 +98,5 @@ export const BaseHmrcOdxGdsTaskList = () => {
     }
   };
 
-  return (
-    <>
-      <HmrcOdxGdsTaskList {...props} />
-    </>
-  );
+  return <HmrcOdxGdsTaskList {...props} />;
 };

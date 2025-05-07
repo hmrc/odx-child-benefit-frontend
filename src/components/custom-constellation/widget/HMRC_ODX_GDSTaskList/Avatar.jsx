@@ -27,13 +27,15 @@ function Avatar(props) {
     if (imageKey) {
       PCore.getAssetLoader()
         .getSvcImage(imageKey)
-        .then((blob) => window.URL.createObjectURL(blob))
-        .then((imagePath) => setImageBlobUrl(imagePath));
+        .then(blob => window.URL.createObjectURL(blob))
+        .then(imagePath => setImageBlobUrl(imagePath));
     }
   }, []);
 
   if (showStatus) {
-    const currentState = PCore.getMessagingServiceManager().getUserPresence().getUserState(userIdentifier);
+    const currentState = PCore.getMessagingServiceManager()
+      .getUserPresence()
+      .getUserState(userIdentifier);
     const [userState, setUserState] = useState(currentState === 'online' ? 'active' : 'inactive');
 
     const handleUserStateChange = ({ state }) => {

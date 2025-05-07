@@ -43,14 +43,15 @@ export default function AppFooter() {
               <h2 className='govuk-visually-hidden'>{t('SUPPORT_LINKS')}</h2>
               <ul className='govuk-footer__inline-list'>
                 <li className='govuk-footer__inline-list-item'>
-                  <a
+                  <Link
+                    to={`/cookies?appname=${appNameUpdate}&serviceParam=${serviceParamUpdate}&serviceNamePageTitle=${serviceNamePageTitle}`}
                     className='govuk-footer__link'
-                    href='https://www.gov.uk/government/publications/data-protection-act-dpa-information-hm-revenue-and-customs-hold-about-you'
                     target='_blank'
                     rel='noreferrer noopener'
                   >
-                    {t('PRIVACY')} <span className= "govuk-visually-hidden"> {t('OPENS_IN_NEW_TAB')}</span>
-                  </a>
+                    {t('COOKIES')}{' '}
+                    <span className='govuk-visually-hidden'> {t('OPENS_IN_NEW_TAB')}</span>
+                  </Link>
                 </li>
                 <li className='govuk-footer__inline-list-item'>
                   <a
@@ -59,18 +60,20 @@ export default function AppFooter() {
                     target='_blank'
                     rel='noreferrer noopener'
                   >
-                    {t('ACCESSIBILITY')} <span className= "govuk-visually-hidden"> {t('OPENS_IN_NEW_TAB')}</span>
+                    {t('ACCESSIBILITY')}{' '}
+                    <span className='govuk-visually-hidden'> {t('OPENS_IN_NEW_TAB')}</span>
                   </a>
                 </li>
                 <li className='govuk-footer__inline-list-item'>
-                  <Link
-                    to={`/cookies?appname=${appNameUpdate}&serviceParam=${serviceParamUpdate}&serviceNamePageTitle=${serviceNamePageTitle}`}
+                  <a
                     className='govuk-footer__link'
+                    href='https://www.gov.uk/government/publications/data-protection-act-dpa-information-hm-revenue-and-customs-hold-about-you'
                     target='_blank'
                     rel='noreferrer noopener'
                   >
-                    {t('COOKIES')} <span className= "govuk-visually-hidden"> {t('OPENS_IN_NEW_TAB')}</span>
-                  </Link>
+                    {t('PRIVACY')}{' '}
+                    <span className='govuk-visually-hidden'> {t('OPENS_IN_NEW_TAB')}</span>
+                  </a>
                 </li>
                 <li className='govuk-footer__inline-list-item'>
                   <a
@@ -79,27 +82,8 @@ export default function AppFooter() {
                     target='_blank'
                     rel='noreferrer noopener'
                   >
-                    {t('TERMS_CONDITIONS')} <span className= "govuk-visually-hidden"> {t('OPENS_IN_NEW_TAB')}</span>
-                  </a>
-                </li>
-                <li className='govuk-footer__inline-list-item'>
-                  <a
-                    className='govuk-footer__link'
-                    href='https://www.gov.uk/government/collections/child-benefit-forms'
-                    target='_blank'
-                    rel='noreferrer noopener'
-                  >
-                    {t('CHB_FORMS_GUIDANCE')} <span className= "govuk-visually-hidden"> {t('OPENS_IN_NEW_TAB')}</span>
-                  </a>
-                </li>
-                <li className='govuk-footer__inline-list-item'>
-                  <a
-                    className='govuk-footer__link'
-                    href='https://www.gov.uk/government/organisations/hm-revenue-customs/contact'
-                    target='_blank'
-                    rel='noreferrer noopener'
-                  >
-                    {t('CONTACT')} <span className= "govuk-visually-hidden"> {t('OPENS_IN_NEW_TAB')}</span>
+                    {t('TERMS_CONDITIONS')}{' '}
+                    <span className='govuk-visually-hidden'> {t('OPENS_IN_NEW_TAB')}</span>
                   </a>
                 </li>
                 <li className='govuk-footer__inline-list-item'>
@@ -109,7 +93,19 @@ export default function AppFooter() {
                     target='_blank'
                     rel='noreferrer noopener'
                   >
-                    {t('HELP')} <span className= "govuk-visually-hidden"> {t('OPENS_IN_NEW_TAB')}</span>
+                    {t('HELP')}{' '}
+                    <span className='govuk-visually-hidden'> {t('OPENS_IN_NEW_TAB')}</span>
+                  </a>
+                </li>
+                <li className='govuk-footer__inline-list-item'>
+                  <a
+                    className='govuk-footer__link'
+                    href='https://www.gov.uk/government/organisations/hm-revenue-customs/contact'
+                    target='_blank'
+                    rel='noreferrer noopener'
+                  >
+                    {t('CONTACT')}{' '}
+                    <span className='govuk-visually-hidden'> {t('OPENS_IN_NEW_TAB')}</span>
                   </a>
                 </li>
                 <li className='govuk-footer__inline-list-item'>
@@ -119,7 +115,8 @@ export default function AppFooter() {
                     target='_blank'
                     rel='noreferrer noopener'
                   >
-                    {t('CYMRAEG')} <span className= "govuk-visually-hidden"> {t('OPENS_IN_NEW_TAB')}</span>
+                    {t('CYMRAEG')}{' '}
+                    <span className='govuk-visually-hidden'> {t('OPENS_IN_NEW_TAB')}</span>
                   </a>
                 </li>
               </ul>
@@ -157,6 +154,7 @@ export default function AppFooter() {
                 rel='noreferrer noopener'
               >
                 {t('COPYRIGHT')}
+                <span className='govuk-visually-hidden'> {t('OPENS_IN_NEW_TAB')}</span>
               </a>
             </div>
           </div>

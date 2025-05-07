@@ -15,7 +15,7 @@ import PropTypes from 'prop-types';
 
 import Avatar from './Avatar.jsx';
 
-const Operator = (props) => {
+const Operator = props => {
   const { id, name, label, testId, helperText, externalUser, metaObj } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,13 +29,15 @@ const Operator = (props) => {
     setPopoverTarget(null);
   }, [id]);
 
-
-
   const OperatorPreview = () => {
     const localizedVal = PCore.getLocaleUtils().getLocaleValue;
     const localeCategory = 'Operator';
     setpopoverContent(
-      <Progress variant='ring' message={localizedVal('Loading operator...', localeCategory)} placement='local' />
+      <Progress
+        variant='ring'
+        message={localizedVal('Loading operator...', localeCategory)}
+        placement='local'
+      />
     );
     if (externalUser && externalUser.classID !== 'Data-Party-Operator') {
       const fields = [
@@ -48,12 +50,21 @@ const Operator = (props) => {
           id: 'pyEmail1',
           name: localizedVal('Email', localeCategory),
           value:
-            externalUser.email !== '' ? <Link href={`mailto:${externalUser.email}`}>{externalUser.email}</Link> : ''
+            externalUser.email !== '' ? (
+              <Link href={`mailto:${externalUser.email}`}>{externalUser.email}</Link>
+            ) : (
+              ''
+            )
         },
         {
           id: 'pyPhoneNumber',
           name: localizedVal('Phone', localeCategory),
-          value: externalUser.phone !== '' ? <Link href={`tel:${externalUser.phone}`}>{externalUser.phone}</Link> : ''
+          value:
+            externalUser.phone !== '' ? (
+              <Link href={`tel:${externalUser.phone}`}>{externalUser.phone}</Link>
+            ) : (
+              ''
+            )
         }
       ];
       setIsLoading(false);
@@ -74,7 +85,7 @@ const Operator = (props) => {
     } else {
       const { getOperatorDetails } = PCore.getUserApi();
       getOperatorDetails(id)
-        .then((res) => {
+        .then(res => {
           if (res.data && res.data.pyOperatorInfo && res.data.pyOperatorInfo.pyUserName) {
             const fields = [
               {
@@ -130,20 +141,25 @@ const Operator = (props) => {
             );
           } else {
             setIsLoading(false);
-            setpopoverContent(<Flex container={{ pad: 1 }}>{localizedVal('Operator not found', localeCategory)}</Flex>);
+            setpopoverContent(
+              <Flex container={{ pad: 1 }}>
+                {localizedVal('Operator not found', localeCategory)}
+              </Flex>
+            );
           }
         })
         .catch(() => {
           setIsLoading(false);
           setpopoverContent(
-            <Flex container={{ pad: 1 }}>{localizedVal('Error loading the operator profile', localeCategory)}</Flex>
+            <Flex container={{ pad: 1 }}>
+              {localizedVal('Error loading the operator profile', localeCategory)}
+            </Flex>
           );
         });
     }
   };
 
-
-  const clickAction = (e) => {
+  const clickAction = e => {
     setPopoverTarget(e.currentTarget);
     setIsOpen(!isOpen);
     if (popoverTarget === null) {
@@ -157,7 +173,7 @@ const Operator = (props) => {
     }
   };
   useOuterEvent('mousedown', [popoverEl, popoverTarget], hidePopover); // Call the method on clicking outside these elements
-  const hideOnEscape = (e) => {
+  const hideOnEscape = e => {
     if (e.key === 'Escape') hidePopover(); // Call the method when Escape key is pressed
   };
 
@@ -171,7 +187,11 @@ const Operator = (props) => {
           onClick={clickAction}
           onKeyDown={hideOnEscape}
           data-test-id={testId}
-          style={label !== null ? { width: 'max-content', height: theme.components.input.height } : undefined}
+          style={
+            label !== null
+              ? { width: 'max-content', height: theme.components.input.height }
+              : undefined
+          }
         >
           <Avatar metaObj={metaObj}></Avatar>
         </Button>
@@ -183,7 +203,11 @@ const Operator = (props) => {
           onClick={clickAction}
           onKeyDown={hideOnEscape}
           data-test-id={testId}
-          style={label !== null ? { width: 'max-content', height: theme.components.input.height } : undefined}
+          style={
+            label !== null
+              ? { width: 'max-content', height: theme.components.input.height }
+              : undefined
+          }
         >
           {name}
         </Button>
@@ -195,7 +219,9 @@ const Operator = (props) => {
           groupId='operator'
           target={popoverTarget}
           placement='bottom-start'
-          style={isLoading ? { position: 'relative', width: '10rem', minHeight: '4rem' } : undefined}
+          style={
+            isLoading ? { position: 'relative', width: '10rem', minHeight: '4rem' } : undefined
+          }
           strategy='fixed'
         >
           {popoverContent}

@@ -7,11 +7,10 @@ import HintTextComponent from '../../helpers/formatters/ParsedHtml';
 // TODO Consider solution to allow for a text divider and/or catch all option, as described here: https://design-system.service.gov.uk/components/radios/divider/index.html
 
 export default function RadioButtons(props) {
-  const { name, onChange, displayInline, value, useSmallRadios = false, options } = props;
+  const { name, onChange, displayInline, value, useSmallRadios = false, options, fieldId } = props;
 
-  const radioDivClasses = `govuk-radios ${displayInline ? 'govuk-radios--inline' : ''} ${
-    useSmallRadios ? 'gobuk-radios--small' : ''
-  }`.trim();
+  const radioDivClasses =
+    `govuk-radios ${displayInline ? 'govuk-radios--inline' : ''} ${useSmallRadios ? 'gobuk-radios--small' : ''}`.trim();
 
   const arrayExclusiveOptions = ['none of the above', "dim un o'r uchod"];
 
@@ -27,7 +26,7 @@ export default function RadioButtons(props) {
             lableOverride = mainLabel;
             hintTextOverride = hintText;
           }
-          const itemId = `${name}${index > 0 ? `-${index}` : ''}`.trim();
+          const itemId = `${fieldId}${index > 0 ? `-${index}` : ''}`.trim();
           const itemHintId = `${itemId}-item-hint`;
           let ariaDescBy = {};
           if (hintTextOverride) {
@@ -70,6 +69,7 @@ export default function RadioButtons(props) {
 RadioButtons.propTypes = {
   ...FieldSet.propTypes,
   name: PropTypes.string,
+  fieldId: PropTypes.string,
   onChange: PropTypes.func,
   value: PropTypes.string,
   displayInline: PropTypes.bool,

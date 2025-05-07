@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { isMultipleDateInput, getWorkareaContainerName } from './../utils';
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const _DateErrorFormatter = (message, propertyName) => {
   // Function to check if the user has entered hyphens into the input
   const hasMoreThanThreeHyphens = msg => msg.split('-').length > 3;
@@ -31,21 +32,24 @@ const _DateErrorFormatter = (message, propertyName) => {
       targets.push('year');
     }
     let missingPartErrorMessage = i18n.t(`DATE_MUST_INCLUDE${missingPartMessage}`);
-    if(isMultipleDateInput()) {
+    if (isMultipleDateInput()) {
       const containerName = getWorkareaContainerName();
       const formEditablefields = PCore?.getFormUtils()?.getEditableFields(containerName);
       const formFields = formEditablefields?.filter(field => field.label === propertyName);
-      let langLabelKey = formFields[0]?.fieldC11nEnv?.getMetadata()?.config?.label?.split('@L ').pop();
+      let langLabelKey = formFields[0]?.fieldC11nEnv
+        ?.getMetadata()
+        ?.config?.label?.split('@L ')
+        .pop();
       langLabelKey = langLabelKey?.replace(' ', '_')?.toUpperCase();
       missingPartErrorMessage = i18n.t(`${langLabelKey}_MUST_INCLUDE${missingPartMessage}`);
       invalidDateErrorMsgByField = i18n.t(`${langLabelKey}_MUST_BE_A_REAL_DATE`);
     }
 
     if (missingPartMessage.length > 0) {
-        return {
-          message: missingPartErrorMessage,
-          targets
-        };
+      return {
+        message: missingPartErrorMessage,
+        targets
+      };
     }
 
     if (message.search(i18n.t('IS_NOT_A_VALID_DATE'))) {

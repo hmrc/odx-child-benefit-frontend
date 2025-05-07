@@ -34,13 +34,13 @@ export const BaseHmrcOdxGdsTextPresentation = () => {
         }
       };
     },
-    onChange: (event) => { setValue(event.target.value); },
-    onBlur: () => { return configProps.value; }
+    onChange: event => {
+      setValue(event.target.value);
+    },
+    onBlur: () => {
+      return configProps.value;
+    }
   };
 
-  return (
-    <>
-      <HmrcOdxGdsTextPresentation {...props} />
-    </>
-  );
+  return <HmrcOdxGdsTextPresentation {...props} />;
 };

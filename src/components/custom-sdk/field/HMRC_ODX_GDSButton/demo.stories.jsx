@@ -37,13 +37,13 @@ export const BaseHmrcOdxGdsButton = () => {
         }
       };
     },
-    onChange: (event) => { setValue(event.target.value); },
-    onBlur: () => { return configProps.value; }
+    onChange: event => {
+      setValue(event.target.value);
+    },
+    onBlur: () => {
+      return configProps.value;
+    }
   };
 
-  return (
-    <>
-      <HmrcOdxGdsButton {...props} />
-    </>
-  );
+  return <HmrcOdxGdsButton {...props} />;
 };

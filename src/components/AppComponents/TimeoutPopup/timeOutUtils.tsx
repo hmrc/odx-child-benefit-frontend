@@ -3,95 +3,74 @@ import { isUnAuthJourney, triggerLogout } from '../../helpers/utils';
 import { TIMEOUT_115_SECONDS, TIMEOUT_13_MINUTES } from '../../helpers/constants';
 import { t } from 'i18next';
 import { TimeoutState } from './index';
+import { Dispatch, SetStateAction } from 'react';
 
-let millisecondsTillWarning = TIMEOUT_13_MINUTES;
+let millisecondsOfInactivity = TIMEOUT_13_MINUTES;
 let millisecondsTillSignout = TIMEOUT_115_SECONDS;
+let applicationTimeout: ReturnType<typeof setTimeout> = null;
+let countdownSignoutTimer: ReturnType<typeof setTimeout> = null;
 
-export const settingTimer = async () => {
+export const settingTimerConfig = async (): Promise<void> => {
   const sdkConfig = await getSdkConfig();
   if (sdkConfig.timeoutConfig.secondsTilWarning)
-    millisecondsTillWarning = sdkConfig.timeoutConfig.secondsTilWarning * 1000;
+    millisecondsOfInactivity = sdkConfig.timeoutConfig.secondsTilWarning * 1000;
   if (sdkConfig.timeoutConfig.secondsTilLogout)
     millisecondsTillSignout = sdkConfig.timeoutConfig.secondsTilLogout * 1000;
 };
 
-let applicationTimeout = null;
-let signoutTimeout = null;
-
-export function clearTimer() {
+export function clearExistingTimers() {
   clearTimeout(applicationTimeout);
-  clearTimeout(signoutTimeout);
+  clearTimeout(countdownSignoutTimer);
 }
 
 export const initTimeout = async (
-  showTimeoutModal,
-  deleteData,
-  isAuthorised,
-  isConfirmationPage
+  showTimeoutModal: Dispatch<SetStateAction<boolean>>,
+  deleteData: any,
+  isAuthorised: boolean,
+  isConfirmationPage: boolean
 ) => {
-  // TODO - isAuthorised to be replaced by caseType from pega
-  // Fetches timeout length config
-  await settingTimer();
-  clearTimeout(applicationTimeout);
-  clearTimeout(signoutTimeout);
-
-  // Clears any existing timeouts and starts the timeout for warning, after set time shows the modal and starts signout timer
-  applicationTimeout = setTimeout(() => {
-    // TODO - unauth and sessiontimeout functionality to be implemented
-    showTimeoutModal(true);
-    signoutTimeout = setTimeout(() => {
-      if (!isAuthorised && !isConfirmationPage && deleteData) {
-        // if the journey is not authorized or from confirmation page , the claim data gets deleted
-        deleteData();
-        clearTimer();
-        // session ends and deleteData() (pega)
-      }
-    }, millisecondsTillSignout);
-  }, millisecondsTillWarning);
-};
-
-export const resetTimeout = (showTimeoutModal, deleteData, isAuthorised, isConfirmationPage) => {
+  // Set timers to sdk-config values
+  await settingTimerConfig();
   // TODO - isAuthorised to be replaced by caseType from pega
   // Fetches timeout length config
   clearTimeout(applicationTimeout);
-  clearTimeout(signoutTimeout);
+  clearTimeout(countdownSignoutTimer);
 
   // Clears any existing timeouts and starts the timeout for warning, after set time shows the modal and starts signout timer
   applicationTimeout = setTimeout(() => {
     showTimeoutModal(true);
-    signoutTimeout = setTimeout(() => {
+    countdownSignoutTimer = setTimeout(() => {
       if (!isAuthorised && !isConfirmationPage && deleteData) {
         // if the journey is not authorized or from confirmation page , the claim data gets deleted
         deleteData();
-        clearTimer();
+        clearExistingTimers();
       } else {
         // the logout case executes when entire timeout occurs after confirmation page or user clicks
         // exit survey link in pop after confirmation page
         triggerLogout();
       }
     }, millisecondsTillSignout);
-  }, millisecondsTillWarning);
+  }, millisecondsOfInactivity);
 };
 
 // Sends 'ping' to pega to keep session alive and then initiates the timeout
 export function staySignedIn(
-  setShowTimeoutModal,
-  claimsListApi,
+  setShowTimeoutModal: Dispatch<SetStateAction<boolean>>,
+  claimsListApi: string,
   deleteData = null,
   isAuthorised = false,
   refreshSignin = true,
   isConfirmationPage = false
 ) {
-  const operatorId = {};
+  const operatorId: { OperatorId?: string } = {};
   if (refreshSignin && !!claimsListApi) {
     if (isUnAuthJourney()) {
-      operatorId['OperatorId'] = 'Model_Unauth@ChB';
+      operatorId.OperatorId = 'Model_Unauth@ChB';
     }
-    // @ts-ignore
-    PCore.getDataPageUtils().getDataAsync(claimsListApi, 'root', { ...operatorId });
+    PCore.getDataPageUtils().getDataAsync(claimsListApi, 'root', { ...operatorId }, {}, {});
   }
   setShowTimeoutModal(false);
-  resetTimeout(setShowTimeoutModal, deleteData, isAuthorised, isConfirmationPage);
+  initTimeout(setShowTimeoutModal, deleteData, isAuthorised, isConfirmationPage);
 }
 
 export const timeoutText = (timeoutState: TimeoutState): string => {

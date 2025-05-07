@@ -37,7 +37,6 @@ const renderField = resolvedProps => {
       ''
     );
 
-
   if (label === 'Service Date')
     val = (
       <DateInput
@@ -89,7 +88,6 @@ const renderField = resolvedProps => {
       ></CosmosPhone>
     );
 
-
   if (variant === 'inline') {
     val = value || (
       <span
@@ -115,15 +113,10 @@ const renderField = resolvedProps => {
       </Text>
     );
   }
-  return (
-    <FieldValueList
-      variant={variant}
-      fields={[{ name: label, value: val }]}
-      key={key}
-    />
-  );
+  return <FieldValueList variant={variant} fields={[{ name: label, value: val }]} key={key} />;
 };
 
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const baseHmrcOdxGdsCheckAnswersPage = () => {
   const props = {
     NumCols: 1,
@@ -158,9 +151,5 @@ export const baseHmrcOdxGdsCheckAnswersPage = () => {
     return props.getPConnect().createComponent(child);
   });
 
-  return (
-    <>
-      <HmrcOdxGdsCheckAnswersPage {...props}>{regionAChildren}</HmrcOdxGdsCheckAnswersPage>
-    </>
-  );
+  return <HmrcOdxGdsCheckAnswersPage {...props}>{regionAChildren}</HmrcOdxGdsCheckAnswersPage>;
 };
