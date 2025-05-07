@@ -1,3 +1,5 @@
+export default {};
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const configProps = {
   label: 'Create operator',
   createLabel: 'Created',
@@ -17,6 +19,7 @@ export const configProps = {
   displayMode: 'LABELS_LEFT'
 };
 
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const operatorDetails = {
   data: {
     pzLoadTime: 'January 18, 2023 10:33:19 AM EST',

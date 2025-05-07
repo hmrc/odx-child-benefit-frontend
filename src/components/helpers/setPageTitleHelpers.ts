@@ -1,6 +1,6 @@
 import i18n, { t } from 'i18next';
 
-/* 
+/*
   setPageTitle()
   sets h1 on the page as the title in following pattern
   `<<pageHeading>> - <<serviceName>> - GOV.UK`
@@ -35,12 +35,16 @@ export default function setPageTitle(errorProperty = false) {
   if (!serviceName || serviceName === '') {
     serviceName = i18n.t('CLAIM_CHILD_BENEFIT');
   }
+  const titleAlert = document.getElementById('titleAlert');
 
   if (pageHeading) {
     const errorPrefix = errorProperty ? `${t('ERROR')}: ` : '';
     document.title = `${errorPrefix}${pageHeading} - ${serviceName} - GOV.UK`;
+
+    if (titleAlert) titleAlert.innerHTML = `${errorPrefix}${pageHeading}`;
   } else {
     document.title = `${serviceName} - GOV.UK`;
+    if (titleAlert) titleAlert.innerHTML = `${serviceName} - GOV.UK`;
   }
 }
 

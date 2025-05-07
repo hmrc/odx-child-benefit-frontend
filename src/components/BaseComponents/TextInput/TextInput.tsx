@@ -4,7 +4,16 @@ import FormGroup, { makeErrorId, makeHintId } from '../FormGroup/FormGroup';
 import HintTextComponent from '../../helpers/formatters/ParsedHtml';
 
 export default function TextInput(props) {
-  const { name, errorText, hintText, inputProps = {}, maxLength, id, onBlur, disabled } = props;
+  const {
+    name,
+    errorText,
+    hintText,
+    inputProps = {},
+    maxLength,
+    fieldId,
+    onBlur,
+    disabled
+  } = props;
 
   if (disabled) {
     return (
@@ -39,9 +48,8 @@ export default function TextInput(props) {
 
   // TODO - Handle input types (password, email, numeric) - Or investigate if these should be separate components, or can simple be handled by inputProps
 
-  const describedByIDs = `${hintText ? makeHintId(name) : ''} ${
-    errorText ? makeErrorId(name) : ''
-  }`.trim();
+  const describedByIDs =
+    `${hintText ? makeHintId(name) : ''} ${errorText ? makeErrorId(name) : ''}`.trim();
   if (describedByIDs.length !== 0) {
     inputProps['aria-describedby'] = describedByIDs;
   }
@@ -51,7 +59,7 @@ export default function TextInput(props) {
       <input
         className={textInputClassesWithWidth(maxLength)}
         {...inputProps}
-        id={id}
+        id={fieldId}
         name={name}
         onBlur={onBlur}
         onKeyDown={keyHandler}
@@ -65,7 +73,7 @@ TextInput.propTypes = {
   name: PropTypes.string,
   maxLength: PropTypes.number,
   inputProps: PropTypes.object,
-  id: PropTypes.string,
+  fieldId: PropTypes.string,
   disabled: PropTypes.bool,
   onBlur: PropTypes.func
 };

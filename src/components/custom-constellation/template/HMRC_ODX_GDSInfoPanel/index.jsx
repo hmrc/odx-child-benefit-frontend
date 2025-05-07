@@ -1,10 +1,7 @@
-import React, { createElement } from "react";
-import PropTypes from "prop-types";
+import React, { createElement } from 'react';
+import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import createPConnectComponent from "@pega/react-sdk-components/lib/bridge/react_pconnect";
-
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-import StyledYourOrgRequiredDxilDetailsWrapper from "./styles";
+import createPConnectComponent from '@pega/react-sdk-components/lib/bridge/react_pconnect';
 
 // Duplicated runtime code from React SDK
 
@@ -16,15 +13,15 @@ export default function HmrcOdxGdsInfoPanel(props) {
   const { t } = useTranslation();
   // Set display mode prop and re-create the children so this part of the dom tree renders
   // in a readonly (display) mode instead of a editable
-  getPConnect().setInheritedProp("displayMode", "LABELS_LEFT");
-  getPConnect().setInheritedProp("readOnly", true);
+  getPConnect().setInheritedProp('displayMode', 'LABELS_LEFT');
+  getPConnect().setInheritedProp('readOnly', true);
   const children = getPConnect()
     .getChildren()
     .map((configObject, index) =>
       createElement(createPConnectComponent(), {
         ...configObject,
         // eslint-disable-next-line react/no-array-index-key
-        key: index.toString(),
+        key: index.toString()
       })
     );
 
@@ -36,40 +33,43 @@ export default function HmrcOdxGdsInfoPanel(props) {
     case '2':
       panelTitle = t('WARNING');
       break;
+    // eslint-disable-next-line default-case-last
     default:
     case '3':
-      panelTitle = t("SUCCESS");
+      panelTitle = t('SUCCESS');
       break;
   }
 
   return (
-    <div className="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
-      <div className="govuk-notification-banner__header">
-        <h2 className="govuk-notification-banner__title" id="govuk-notification-banner-title">
+    <div
+      className='govuk-notification-banner'
+      role='region'
+      aria-labelledby='govuk-notification-banner-title'
+      data-module='govuk-notification-banner'
+    >
+      <div className='govuk-notification-banner__header'>
+        <h2 className='govuk-notification-banner__title' id='govuk-notification-banner-title'>
           {panelTitle}
         </h2>
       </div>
-      <div className="govuk-notification-banner__content">
-        { panelHeader !== '' &&
-          <h3 className="govuk-notification-banner__heading">
-            {panelHeader}
-          </h3>
-        }
-      {children.map((child, i) => (
-        <p className="govuk-body" key={`r-${i + 1}`}>
-          {child.props.value}
-        </p>
+      <div className='govuk-notification-banner__content'>
+        {panelHeader !== '' && (
+          <h3 className='govuk-notification-banner__heading'>{panelHeader}</h3>
+        )}
+        {children.map((child, i) => (
+          <p className='govuk-body' key={`r-${i + 1}`}>
+            {child.props.value}
+          </p>
         ))}
-        { panelLink !== '' &&
-          <a className="govuk-notification-banner__link" href={panelLink}>
+        {panelLink !== '' && (
+          <a className='govuk-notification-banner__link' href={panelLink}>
             {t('MORE_INFORMATION')}
           </a>
-        }
+        )}
       </div>
     </div>
   );
 }
-
 
 // HmrcOdxGdsInfoPanel.defaultProps = {
 //   showLabel: true

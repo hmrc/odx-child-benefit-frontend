@@ -8,13 +8,11 @@ import Operator from './Operator.jsx';
 
 import StyledHmrcOdxGdsTaskListWrapper from './styles';
 
-
 // Duplicated runtime code from Constellation Design System Component
 
 // props passed in combination of props from property panel (config.json) and run time props from Constellation
 // any default values in config.pros should be set in defaultProps at bottom of this file
 export default function HmrcOdxGdsTaskList(props) {
-
   const {
     getPConnect,
     title,
@@ -31,48 +29,44 @@ export default function HmrcOdxGdsTaskList(props) {
     hideLabel
   } = props;
 
-
   const [_label, user, dateTimeValue] =
     label === 'Create operator'
       ? [createLabel, createOperator, createDateTime]
       : label === 'Update operator'
-      ? [updateLabel, updateOperator, updateDateTime]
-      : [resolveLabel, resolveOperator, resolveDateTime];
-
-
+        ? [updateLabel, updateOperator, updateDateTime]
+        : [resolveLabel, resolveOperator, resolveDateTime];
 
   return user.userId && user.userName ? (
     <StyledHmrcOdxGdsTaskListWrapper>
       <Card>
-      <CardHeader>{title}</CardHeader>
-      <CardContent>
-      <Flex container={{ direction: 'row'}}>
-      <Operator label={hideLabel ? null : _label} name={user.userName} id={user.userId} getPConnect={getPConnect} />
+        <CardHeader>{title}</CardHeader>
+        <CardContent>
+          <Flex container={{ direction: 'row' }}>
+            <Operator
+              label={hideLabel ? null : _label}
+              name={user.userName}
+              id={user.userId}
+              getPConnect={getPConnect}
+            />
 
-      {dateTimeValue && (
-        <Fragment>
-          {' '}
-          <DateTimeDisplay value={dateTimeValue} variant='relative' />
-        </Fragment>
-      )}
-      </Flex>
-      </CardContent>
+            {dateTimeValue && (
+              <Fragment>
+                {' '}
+                <DateTimeDisplay value={dateTimeValue} variant='relative' />
+              </Fragment>
+            )}
+          </Flex>
+        </CardContent>
       </Card>
-
     </StyledHmrcOdxGdsTaskListWrapper>
   ) : (
-    <StyledHmrcOdxGdsTaskListWrapper>
-    defVal
-    </StyledHmrcOdxGdsTaskListWrapper>
+    <StyledHmrcOdxGdsTaskListWrapper>defVal</StyledHmrcOdxGdsTaskListWrapper>
   );
-
-
-
 }
 
 HmrcOdxGdsTaskList.defaultProps = {
-  "label": "Create operator",
-  "title": "Create operator",
+  label: 'Create operator',
+  title: 'Create operator',
   createLabel: null,
   updateLabel: null,
   createOperator: null,

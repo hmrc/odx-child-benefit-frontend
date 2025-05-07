@@ -93,7 +93,6 @@ export default function Landing({
   function fetchSubmittedClaimsData() {
     const operatorId = PCore.getEnvironmentInfo().getOperatorIdentifier();
     PCore.getDataPageUtils()
-      // @ts-ignore
       .getDataAsync('D_ClaimantSubmittedEdStartCases', 'root', { OperatorId: operatorId })
       .then(resp => {
         const filteredCases = getClaims(resp.data.slice(0, 10), 'VIEW_REQUEST');
@@ -104,9 +103,10 @@ export default function Landing({
 
   function fetchInProgressClaimsData() {
     let inProgressClaimsData: any = [];
-    // @ts-ignore
+    const options = { invalidateCache: true };
+
     PCore.getDataPageUtils()
-      .getDataAsync('D_ClaimantWorkAssignmentEdStartCases', 'root')
+      .getDataAsync('D_ClaimantWorkAssignmentEdStartCases', 'root', {}, {}, {}, options)
       .then(resp => {
         resp = resp.data.slice(0, 10);
         inProgressClaimsData = getClaims(resp, 'CONTINUE_REQUEST');

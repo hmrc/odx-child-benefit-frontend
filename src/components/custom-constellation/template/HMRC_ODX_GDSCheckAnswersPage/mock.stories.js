@@ -1,3 +1,5 @@
+export default {};
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const pyReviewRaw = {
   name: 'CollectInformation',
   type: 'View',
@@ -72,6 +74,7 @@ export const pyReviewRaw = {
   classID: 'OM5W9U-SampleApp-Work-Test'
 };
 
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const regionChildrenResolved = [
   {
     readOnly: undefined,

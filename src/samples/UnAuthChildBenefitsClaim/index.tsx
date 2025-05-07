@@ -1,7 +1,7 @@
 // @ts-nocheck - TypeScript type checking to be added soon
 import React, { useState, useEffect } from 'react';
 import { render } from 'react-dom';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StoreContext from '@pega/react-sdk-components/lib/bridge/Context/StoreContext';
 import createPConnectComponent from '@pega/react-sdk-components/lib/bridge/react_pconnect';
@@ -20,7 +20,7 @@ import { checkCookie, setCookie } from '../../components/helpers/cookie';
 import ShutterServicePage from '../../components/AppComponents/ShutterService/ShutterServicePage';
 import {
   staySignedIn,
-  clearTimer,
+  clearExistingTimers,
   initTimeout
 } from '../../components/AppComponents/TimeoutPopup/timeOutUtils';
 import DeleteAnswers from './deleteAnswers';
@@ -30,7 +30,8 @@ import {
   scrollToTop,
   triggerLogout
 } from '../../components/helpers/utils';
-import { TIMEOUT_115_SECONDS } from '../../components/helpers/constants';
+import { loadBundles } from '../../components/helpers/languageToggleHelper';
+import LanguageToggle from '../../components/AppComponents/LanguageToggle';
 
 declare const myLoadMashup: Function;
 
@@ -45,9 +46,9 @@ export default function UnAuthChildBenefitsClaim() {
   const [showDeletePage, setShowDeletePage] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
   const [assignmentPConn, setAssignmentPConn] = useState(null);
-  const [millisecondsTillSignout, setmillisecondsTillSignout] = useState(TIMEOUT_115_SECONDS);
-  const history = useHistory();
+  const navigate = useNavigate();
   const [caseId, setCaseId] = useState('');
+  const [rootProps, setRootProps] = useState({});
 
   const claimsListApi = 'D_ClaimantSubmittedChBCases';
 
@@ -56,7 +57,7 @@ export default function UnAuthChildBenefitsClaim() {
   registerServiceName(serviceName);
 
   function doRedirectDone() {
-    history.replace('/ua');
+    navigate('/ua');
     // appName and mainRedirect params have to be same as earlier invocation
     loginIfNecessary({ appName: 'ChB', mainRedirect: true });
   }
@@ -77,7 +78,7 @@ export default function UnAuthChildBenefitsClaim() {
   }
 
   // TODO - this function will have its pega counterpart for the feature to be completed - part of future story
-  function deleteData() {
+  function deleteData(): void {
     const activeContainer = PCore.getContainerUtils().getActiveContainerItemContext('app/primary');
     if (bShowPega && activeContainer) {
       PCore.getContainerUtils().closeContainerItem(activeContainer, { skipDirtyCheck: true });
@@ -97,12 +98,11 @@ export default function UnAuthChildBenefitsClaim() {
       setShowPega(true);
 
       const pyAssignmentID = sessionStorage.getItem('assignmentID');
-      let startingFields = {};
-      startingFields = {
+      const startingFields = {
         NotificationLanguage: sessionStorage.getItem('rsdk_locale')?.slice(0, 2) || 'en'
       };
       if (sessionStorage.getItem('isRefreshFromDeleteScreen') === 'true') {
-        clearTimer();
+        clearExistingTimers();
         deleteData();
       } else if (sessionStorage.getItem('caseRefId')) {
         sessionStorage.removeItem('caseRefId');
@@ -245,6 +245,9 @@ export default function UnAuthChildBenefitsClaim() {
       () => {
         resetAppDisplay();
         setShowPega(true);
+        setTimeout(() => {
+          PCore.getPubSubUtils().publish('callLocalActionSilently', {});
+        }, 1000);
       },
       'continueAssignment'
     );
@@ -301,7 +304,7 @@ export default function UnAuthChildBenefitsClaim() {
    * is ready to be rendered
    * @param inRenderObj the initial, top-level PConnect object to render
    */
-  function initialRender(inRenderObj) {
+  function renderRootComponent(inRenderObj) {
     // loadMashup does its own thing so we don't need to do much/anything here
     // // modified from react_root.js render
     const {
@@ -342,7 +345,7 @@ export default function UnAuthChildBenefitsClaim() {
   /**
    * kick off the application's portal that we're trying to serve up
    */
-  function startMashup() {
+  async function startMashup() {
     // NOTE: When loadMashup is complete, this will be called.
     PCore.onPCoreReady(renderObj => {
       // Check that we're seeing the PCore version we expect
@@ -350,11 +353,6 @@ export default function UnAuthChildBenefitsClaim() {
       establishPCoreSubscriptions();
 
       initTimeout(setShowTimeoutModal, deleteData, false, bShowResolutionScreen);
-      // Fetches timeout length config
-      getSdkConfig().then(sdkConfig => {
-        if (sdkConfig.timeoutConfig.secondsTilLogout)
-          setmillisecondsTillSignout(sdkConfig.timeoutConfig.secondsTilLogout * 1000);
-      });
 
       // Subscribe to any store change to reset timeout counter
       PCore.getStore().subscribe(() =>
@@ -371,7 +369,8 @@ export default function UnAuthChildBenefitsClaim() {
       // TODO : Consider refactoring 'en_GB' reference as this may need to be set elsewhere
       PCore.getEnvironmentInfo().setLocale(sessionStorage.getItem('rsdk_locale') || 'en_GB');
 
-      initialRender(renderObj);
+      setRootProps(renderObj);
+      renderRootComponent(renderObj);
 
       /* Functionality to set the device id in the header for use in CIP.
       Device id is unique and will be stored on the user device / browser cookie */
@@ -390,9 +389,12 @@ export default function UnAuthChildBenefitsClaim() {
     //  top level Pega root element (likely a RootContainer)
 
     myLoadMashup('pega-root', false); // this is defined in bootstrap shell that's been loaded already
+
+    // Preloading bundles for language toggle
+    await loadBundles(sessionStorage.getItem('rsdk_locale') || 'en_GB');
   }
 
-  function setIdsInHeaders(deviceID, externalID) {
+  async function setIdsInHeaders(deviceID, externalID) {
     setCookie('pegaodxdi', deviceID, 3650);
     setCookie('pegaodxei', externalID, 3650);
     const isDeviceIdSet = PCore.getRestClient()
@@ -403,25 +405,43 @@ export default function UnAuthChildBenefitsClaim() {
       .registerHeader('externalid', externalID);
     if (isDeviceIdSet && isExternalIdSet) {
       // start the portal
-      startMashup();
+      await startMashup();
     }
   }
 
-  function fetchingIDsForHeader() {
+  async function fetchingIDsForHeader() {
     let deviceID = checkCookie('pegaodxdi');
     let externalID = checkCookie('pegaodxei');
     if (deviceID && externalID) {
-      setIdsInHeaders(deviceID, externalID);
+      await setIdsInHeaders(deviceID, externalID);
     } else {
       PCore.getDataPageUtils()
         .getPageDataAsync('D_UserSession', 'root')
-        .then(res => {
+        .then(async res => {
           deviceID = res.DeviceId;
           externalID = res.ExternalId;
-          setIdsInHeaders(deviceID, externalID);
+          await setIdsInHeaders(deviceID, externalID);
         });
     }
   }
+
+  // Function to force re-render the pega Root component
+  const forceRefreshRootComponent = () => {
+    renderRootComponent(rootProps);
+  };
+
+  useEffect(() => {
+    if (Object.keys(rootProps).length) {
+      PCore.getPubSubUtils().subscribe(
+        'forceRefreshRootComponent',
+        forceRefreshRootComponent,
+        'forceRefreshRootComponent'
+      );
+    }
+    return () => {
+      PCore?.getPubSubUtils().unsubscribe('forceRefreshRootComponent', 'forceRefreshRootComponent');
+    };
+  }, [rootProps]);
 
   // One time (initialization) subscriptions and related unsubscribe
   useEffect(() => {
@@ -445,9 +465,7 @@ export default function UnAuthChildBenefitsClaim() {
         sISOTime = sISOTime.replace(regex, '');
         // Service package to use custom auth with Basic
         const sB64 = window.btoa(
-          `${sdkConfigAuth.mashupUserIdentifier}:${window.atob(
-            sdkConfigAuth.mashupPassword
-          )}:${sISOTime}`
+          `${sdkConfigAuth.mashupUserIdentifier}:${window.atob(sdkConfigAuth.mashupPassword)}:${sISOTime}`
         );
         sdkSetAuthHeader(`Basic ${sB64}`);
       }
@@ -455,9 +473,9 @@ export default function UnAuthChildBenefitsClaim() {
       loginIfNecessary({ appName: 'ChB', mainRedirect: true, redirectDoneCB: doRedirectDone });
     });
 
-    document.addEventListener('SdkConstellationReady', () => {
+    document.addEventListener('SdkConstellationReady', async () => {
       // ready the header and call startMashup()
-      fetchingIDsForHeader();
+      await fetchingIDsForHeader();
     });
 
     document.addEventListener('SdkLoggedOut', () => {
@@ -526,22 +544,22 @@ export default function UnAuthChildBenefitsClaim() {
               triggerLogout();
             } else {
               sessionStorage.setItem('hasSessionTimedOut', 'true');
-              clearTimer();
+              clearExistingTimers();
               deleteData();
             }
           }}
           userTimeoutDelete={() => {
             sessionStorage.setItem('hasSessionTimedOut', 'false');
-            clearTimer();
+            clearExistingTimers();
             deleteData();
           }}
           isAuthorised={false}
           isConfirmationPage={bShowResolutionScreen}
-          millisecondsTillSignout={millisecondsTillSignout}
         />
       )}
-      <AppHeader appname={t('CLAIM_CHILD_BENEFIT')} hasLanguageToggle isPegaApp={bShowPega} />
+      <AppHeader appname={t('CLAIM_CHILD_BENEFIT')} isPegaApp={bShowPega} />
       <div className='govuk-width-container'>
+        <LanguageToggle />
         {serviceNotAvailable ? (
           <ServiceNotAvailable returnToPortalPage={returnToPortalPage} />
         ) : (

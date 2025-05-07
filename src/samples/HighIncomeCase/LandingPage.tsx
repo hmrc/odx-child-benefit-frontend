@@ -9,7 +9,10 @@ export default function LandingPage({ onProceedHandler }) {
 
   return (
     <MainWrapper>
-      <h1 className='govuk-heading-xl'>{t('HICBC_LANDINGPAGE_HEADING')}</h1>
+      <h1 className='govuk-heading-l'>{t('HICBC_LANDINGPAGE_HEADING')}</h1>
+      <WarningText className='govuk-body'>
+        {t('HICBC_LANDINGPAGE_WARNING_CAN_ONLY_BE_COMPLETED_BY_CLAIMANT')}
+      </WarningText>
       <p className='govuk-body'> {t('HICBC_LANDINGPAGE_P1')}</p>
       <p className='govuk-body'> {t('HICBC_LANDINGPAGE_P2')}</p>
       <ul className='govuk-list govuk-list--bullet'>
@@ -28,9 +31,6 @@ export default function LandingPage({ onProceedHandler }) {
         <li>{t('HICBC_LANDINGPAGE_LISTITEM_OPT_IN_WITHIN_3_MONTHS')}</li>
         <li>{t('HICBC_LANDINGPAGE_LISTITEM_HAVE_PAYMENT_DETAILS_AVAILABLE')}</li>
       </ul>
-      <WarningText className='govuk-body'>
-        {t('HICBC_LANDINGPAGE_WARNING_CAN_ONLY_BE_COMPLETED_BY_CLAIMANT')}
-      </WarningText>
       <Button id='startNow' onClick={onProceedHandler} variant='start'>
         {t('START_NOW')}
       </Button>

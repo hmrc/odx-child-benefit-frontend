@@ -18,12 +18,19 @@ export default function AuthorisedModal({ timeoutState, staySignedinHandler, sig
           ? `${timeoutState.screenReaderCountdown}`
           : `${t('FOR_YOUR_SECURITY_WE_WILL_SIGN_YOU_OUT')} ${t('2_MINUTES')}.`}
       </p>
-      <div className='govuk-button-group govuk-!-padding-top-4'>
-        <Button type='button' onClick={staySignedinHandler}>
-          {t('STAY_SIGNED_IN')}
-        </Button>
-
-        <a id='modal-staysignin-btn' className='govuk-link' href='#' onClick={signoutHandler}>
+      <Button type='button' onClick={staySignedinHandler}>
+        {t('STAY_SIGNED_IN')}
+      </Button>
+      <div className='hmrc-timeout-dialog__link-wrapper'>
+        <a
+          id='modal-staysignin-btn'
+          className='govuk-link hmrc-timeout-dialog__link'
+          href='#'
+          onClick={e => {
+            e.preventDefault();
+            signoutHandler();
+          }}
+        >
           {t('SIGN-OUT')}
         </a>
       </div>

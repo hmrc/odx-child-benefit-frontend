@@ -7,6 +7,7 @@ import { scrollToTop } from '../../../components/helpers/utils';
 import MainWrapper from '../../../components/BaseComponents/MainWrapper';
 import { useLocation } from 'react-router-dom';
 import { registerServiceName } from '../../../components/helpers/setPageTitleHelpers';
+import LanguageToggle from '../../../components/AppComponents/LanguageToggle';
 
 const FIND_OUT_MORE_URL = 'https://www.tax.service.gov.uk/help/cookie-details';
 
@@ -24,8 +25,9 @@ export default function CookiePage() {
 
   return (
     <>
-      <AppHeader appname={t(appNameHeader)} hasLanguageToggle />
+      <AppHeader appname={t(appNameHeader)} />
       <div className='govuk-width-container'>
+        <LanguageToggle />
         <MainWrapper serviceParam={serviceParam}>
           <h1 className='govuk-heading-l'>{t('COOKIES')}</h1>
           <p className='govuk-body'>{t('COOKIES_PAGE_P1')}</p>

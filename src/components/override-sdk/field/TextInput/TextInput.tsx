@@ -30,7 +30,7 @@ export default function TextInput(props) {
   registerNonEditableField(!!disabled);
 
   const localizedVal = PCore.getLocaleUtils().getLocaleValue;
-  const [errorMessage, setErrorMessage] = useState(localizedVal(validatemessage));
+  const [errorMessage, setErrorMessage] = useState(localizedVal(validatemessage, ''));
   const isHICBC = isHICBCJourney();
 
   if (isHICBC) {
@@ -40,13 +40,14 @@ export default function TextInput(props) {
   }
 
   useEffect(() => {
-    setErrorMessage(localizedVal(validatemessage));
+    setErrorMessage(localizedVal(validatemessage, ''));
   }, [validatemessage]);
   const thePConn = getPConnect();
   const actionsApi = thePConn.getActionsApi();
 
   const propName = thePConn.getStateProps().value;
-  const formattedPropertyName = name || propName?.split('.')?.pop();
+  const fieldId = propName?.split('.')?.pop();
+  const formattedPropertyName = name || fieldId;
 
   const handleChange = evt => {
     if (name === 'content-pyPostalCode') {
@@ -94,37 +95,38 @@ export default function TextInput(props) {
 
   const extraProps = { testProps: { 'data-test-id': testId } };
 
-  const extraInputProps = { onChange, value };
+  const extraInputProps: { onChange: any; value: any; type?: string; autoComplete?: string } = {
+    onChange,
+    value
+  };
 
   // TODO Investigate more robust way to check if we should display as password
   if (fieldMetadata?.displayAs === 'pxPassword') {
-    extraInputProps['type'] = 'password';
+    extraInputProps.type = 'password';
   }
 
   if (configAlternateDesignSystem?.autocomplete) {
-    extraInputProps['autoComplete'] = configAlternateDesignSystem.autocomplete;
+    extraInputProps.autoComplete = configAlternateDesignSystem.autocomplete;
   } else {
-    extraInputProps['autoComplete'] = 'off';
+    extraInputProps.autoComplete = 'off';
   }
 
   return (
-    <>
-      <GDSTextInput
-        inputProps={{
-          ...inputProps,
-          ...extraInputProps
-        }}
-        hintText={helperText}
-        errorText={errorMessage}
-        label={label}
-        labelIsHeading={isOnlyField}
-        name={formattedPropertyName}
-        maxLength={maxLength}
-        id={formattedPropertyName}
-        onBlur={e => handleChange(e)}
-        {...extraProps}
-        disabled={disabled || false}
-      />
-    </>
+    <GDSTextInput
+      inputProps={{
+        ...inputProps,
+        ...extraInputProps
+      }}
+      hintText={helperText}
+      errorText={errorMessage}
+      label={label}
+      labelIsHeading={isOnlyField}
+      name={formattedPropertyName}
+      maxLength={maxLength}
+      fieldId={fieldId}
+      onBlur={e => handleChange(e)}
+      {...extraProps}
+      disabled={disabled || false}
+    />
   );
 }

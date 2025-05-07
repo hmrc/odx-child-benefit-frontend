@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/prefer-default-export
+// eslint-disable-next-line import/prefer-default-export, storybook/prefer-pascal-case
 export const configProps = {
   value: '',
   label: 'Text Sample',

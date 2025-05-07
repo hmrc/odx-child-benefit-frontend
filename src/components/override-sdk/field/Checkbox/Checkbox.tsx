@@ -39,12 +39,12 @@ export default function CheckboxComponent(props) {
   } = getPConnect().getConfigProps();
   // const {isOnlyField, overrideLabel} = useIsOnlyField(props.displayOrder);
   /* retaining for future reference, incase changes need to be reverted
- 
+
   if(isOnlyField && !readOnly) label = overrideLabel.trim() ? overrideLabel : label; */
   const { hasBeenWrapped } = useContext(ReadOnlyDefaultFormContext);
 
   const localizedVal = PCore.getLocaleUtils().getLocaleValue;
-  const [errorMessage, setErrorMessage] = useState(localizedVal(validatemessage));
+  const [errorMessage, setErrorMessage] = useState(localizedVal(validatemessage, ''));
   const { errorMsgs } = useContext(ErrorMsgContext);
 
   // build name for id, allows for error message navigation to field
@@ -57,7 +57,7 @@ export default function CheckboxComponent(props) {
   useEffect(() => {
     const found = checkErrorMsgs(errorMsgs, name);
     if (!found) {
-      setErrorMessage(localizedVal(validatemessage));
+      setErrorMessage(localizedVal(validatemessage, ''));
     }
   }, [errorMsgs, validatemessage]);
 
@@ -68,6 +68,20 @@ export default function CheckboxComponent(props) {
   const propName = thePConn.getStateProps().value;
   const inprogressStatus = checkStatus();
 
+  const formattedPropertyName = propName.split('.').pop();
+  const fieldId =
+    getPConnect().viewName.toLowerCase() === 'declaration'
+      ? `${formattedPropertyName}`
+      : `${propertyContext}-${formattedPropertyName}`;
+
+  useEffect(() => {
+    const found = checkErrorMsgs(errorMsgs, fieldId);
+    if (!found) {
+      // @ts-ignore
+      setErrorMessage(localizedVal(validatemessage));
+    }
+  }, [errorMsgs, validatemessage]);
+
   if (
     hasBeenWrapped &&
     configAlternateDesignSystem?.ShowChangeLink &&
@@ -77,7 +91,7 @@ export default function CheckboxComponent(props) {
       <GDSCheckAnswers
         label={props.label}
         value={value ? props.trueLabel : props.falseLabel}
-        name={name}
+        name={fieldId}
         stepId={configAlternateDesignSystem.stepId}
         hiddenText={configAlternateDesignSystem.hiddenText}
         getPConnect={getPConnect}
@@ -113,34 +127,38 @@ export default function CheckboxComponent(props) {
       OverrideLabelValue.trim().toLowerCase() === 'datganiad' ? (
         <div className={`govuk-form-group ${errorMessage ? 'govuk-form-group--error' : ''}`}>
           {errorMessage && (
-            <p id={`${name}-error`} className='govuk-error-message'>
+            <p id={`${fieldId}-error`} className='govuk-error-message'>
               <span className='govuk-visually-hidden'>{t('ERROR')}:</span>{' '}
               {removeRedundantString(errorMessage)}
             </p>
           )}
           <GDSCheckbox
             item={{ checked: value, label: caption, readOnly: false, hintText }}
-            index={index}
-            name={name}
-            inputProps={{ ...inputProps }}
+            index={index || 0}
+            name={fieldId}
+            inputProps={inputProps}
             onChange={evt => {
               handleChange(evt);
               exclusiveOptionChangeHandler();
             }}
-            key={name}
+            key={fieldId}
+            fieldId={fieldId}
+            hasAssociatedError={!!errorMessage}
           />
         </div>
       ) : (
         <GDSCheckbox
           item={{ checked: value, label: caption, readOnly: false, hintText }}
-          index={index}
-          name={name}
-          inputProps={{ ...inputProps }}
+          index={index || 0}
+          name={fieldId}
+          inputProps={inputProps}
           onChange={evt => {
             handleChange(evt);
             exclusiveOptionChangeHandler();
           }}
-          key={name}
+          key={fieldId}
+          fieldId={fieldId}
+          hasAssociatedError={!!errorMessage}
         />
       )}
     </>

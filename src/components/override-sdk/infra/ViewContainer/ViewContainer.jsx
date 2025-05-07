@@ -13,6 +13,7 @@ import { isHICBCJourney } from '../../../helpers/utils';
 // Redux and creation/update of Redux containers and PConnect.  Modifying this code could have undesireable results and
 // is totally at your own risk.
 //
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export default function ViewContainer(props) {
   // const { getPConnect, children, routingInfo, name } = props;
   const { getPConnect, name, mode, limit, loadingInfo, routingInfo } = props;

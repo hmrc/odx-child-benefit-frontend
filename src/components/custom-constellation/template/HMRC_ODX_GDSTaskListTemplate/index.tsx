@@ -91,6 +91,7 @@ function HmrcOdxGdsTaskListTemplate(props: HmrcOdxGdsTaskListTemplateProps) {
             {caseType === 'Auth' ? 'Save And Continue' : 'Continue'}
           </Button>
         ) : (
+          // eslint-disable-next-line react/jsx-no-useless-fragment
           <></>
         )}
       </div>

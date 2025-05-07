@@ -1,3 +1,5 @@
+export default {};
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const configProps = {
   value: '',
   label: 'TextInput Sample',
@@ -7,11 +9,13 @@ export const configProps = {
   hasSuggestions: false
 };
 
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const stateProps = {
   value: '.TextInputSample',
   hasSuggestions: false
 };
 
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const fieldMetadata = {
   classID: 'DIXL-MediaCo-Work-NewService',
   type: 'Text',

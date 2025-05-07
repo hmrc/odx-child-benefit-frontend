@@ -13,6 +13,7 @@ import AppContextEducation, { AppContextValues } from './AppContextEducation'; /
 import { loginIfNecessary, sdkSetAuthHeader, getSdkConfig } from '@pega/auth/lib/sdk-auth-manager';
 import { checkStatus, getServiceShutteredStatus } from '../../../components/helpers/utils';
 import checkAuthAndRedirectIfTens from '../../../components/helpers/checkAuthAndRedirectIfTens';
+import { loadBundles } from '../../../components/helpers/languageToggleHelper';
 
 declare const myLoadMashup: any;
 /*
@@ -89,9 +90,13 @@ export function establishPCoreSubscriptions({
   async function customAssignmentFinished() {
     const sdkConfig = await getSdkConfig();
     setContainerClosed(false);
-    if (sdkConfig.showResolutionStatuses?.includes(checkStatus())) {
-      showResolutionScreen();
-    }
+
+    const unsubscribe = PCore.getStore().subscribe(() => {
+      if (sdkConfig.showResolutionStatuses?.includes(checkStatus())) {
+        unsubscribe();
+        showResolutionScreen();
+      }
+    });
   }
 
   PCore.getPubSubUtils().subscribe(
@@ -139,6 +144,9 @@ export function establishPCoreSubscriptions({
     () => {
       // console.log("SUBEVENT!! showPegaWhenAssignmentOpened")
       setShowPega(true);
+      setTimeout(() => {
+        PCore.getPubSubUtils().publish('callLocalActionSilently', {});
+      }, 1000);
     },
     'showPegaWhenAssignmentOpened'
   );
@@ -360,9 +368,7 @@ export const useStartMashup = (onRedirectDone, _AppContextValues: AppContextValu
         sISOTime = sISOTime.replace(regex, '');
         // Service package to use custom auth with Basic
         const sB64 = window.btoa(
-          `${sdkConfigAuth.mashupUserIdentifier}:${window.atob(
-            sdkConfigAuth.mashupPassword
-          )}:${sISOTime}`
+          `${sdkConfigAuth.mashupUserIdentifier}:${window.atob(sdkConfigAuth.mashupPassword)}:${sISOTime}`
         );
         sdkSetAuthHeader(`Basic ${sB64}`);
       }
@@ -393,6 +399,9 @@ export const useStartMashup = (onRedirectDone, _AppContextValues: AppContextValu
           },
           _AppContextValues
         );
+
+        // Preloading bundles for language toggle
+        loadBundles(sessionStorage.getItem('rsdk_locale') || 'en_GB');
       }
     });
 

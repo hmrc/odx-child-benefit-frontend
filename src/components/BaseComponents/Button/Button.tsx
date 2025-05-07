@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import { getUA } from 'react-device-detect';
+import { getSdkConfig } from '@pega/auth/lib/sdk-auth-manager';
 
 export default function Button(props: React.PropsWithChildren<any>) {
   const { disabled, id, variant, onClick, children, attributes = {} } = props;
+  const [isMobileApp, setIsMobileApp] = useState(false);
 
   const handleClickEvent = e => {
     e.preventDefault();
     onClick();
+  };
+
+  const handleKeyDown = event => {
+    if (event.key === ' ') {
+      event.preventDefault();
+      event.target.click();
+    }
   };
 
   const { t } = useTranslation();
@@ -16,6 +26,15 @@ export default function Button(props: React.PropsWithChildren<any>) {
   if (!Object.prototype.hasOwnProperty.call(attributes, 'className')) {
     attributes.className = '';
   }
+
+  useEffect(() => {
+    getSdkConfig().then(sdkConfig => {
+      const userAgent = getUA.toLocaleLowerCase();
+      setIsMobileApp(
+        userAgent.includes(sdkConfig.mobileApp.mobileAppUserAgent.toLocaleLowerCase())
+      );
+    });
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line no-prototype-builtins
@@ -43,6 +62,7 @@ export default function Button(props: React.PropsWithChildren<any>) {
         className={'govuk-button govuk-button--start'.concat(' ', attributes.className)}
         data-module='govuk-button'
         onClick={handleClickEvent}
+        onKeyDown={handleKeyDown}
       >
         {children}
         <svg
@@ -82,6 +102,7 @@ export default function Button(props: React.PropsWithChildren<any>) {
         }}
         {...attributes}
         className='govuk-back-link'
+        aria-label={isMobileApp ? t('BACK_ARIA_LABEL') : undefined}
       >
         {children ? ` ${children}` : t('BACK')}
       </a>
@@ -90,9 +111,11 @@ export default function Button(props: React.PropsWithChildren<any>) {
 
   let buttonAttributes = {
     ...attributes,
-    className: `govuk-button ${variant === 'secondary' ? ' govuk-button--secondary' : ''} ${
-      disabled ? ' govuk-button--disabled' : ''
-    }`.concat(' ', attributes.className),
+    className:
+      `govuk-button ${variant === 'secondary' ? ' govuk-button--secondary' : ''} ${disabled ? ' govuk-button--disabled' : ''}`.concat(
+        ' ',
+        attributes.className
+      ),
     'data-module': 'govuk-button',
     'data-prevent-double-click': true
   };
@@ -117,7 +140,7 @@ Button.propTypes = {
   name: PropTypes.string,
   disabled: PropTypes.bool,
   variant: PropTypes.string,
-  children: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  children: PropTypes.oneOfType([PropTypes.string, PropTypes.object, PropTypes.array]),
   type: PropTypes.string,
   onClick: PropTypes.func,
   attributes: PropTypes.object

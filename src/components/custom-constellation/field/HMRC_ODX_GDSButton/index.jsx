@@ -3,7 +3,6 @@ import { Input, Label } from '@pega/cosmos-react-core';
 
 import StyledHmrcOdxGdsButtonWrapper from './styles';
 
-
 // Duplicated runtime code from Constellation Design System Component
 
 // props passed in combination of props from property panel (config.json) and run time props from Constellation

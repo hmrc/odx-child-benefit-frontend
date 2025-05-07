@@ -6,16 +6,17 @@ import MainWrapper from '../../../components/BaseComponents/MainWrapper';
 import RadioButtons from '../../../components/BaseComponents/RadioButtons/RadioButtons';
 import StaticPageErrorSummary from '../ErrorSummary';
 import '../../../../assets/css/appStyles.scss';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import setPageTitle from '../../../components/helpers/setPageTitleHelpers';
 import { getSdkConfig } from '@pega/auth/lib/sdk-auth-manager';
 import useTranslatedStaticPageError from '../../../components/helpers/hooks/useTranslatedStaticPageError';
+import LanguageToggle from '../../../components/AppComponents/LanguageToggle';
 
 export default function AreYouSureToContinueWithoutSignIn() {
   const [errorMsg, setErrorMsg] = useState('');
   const { t } = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const lang = sessionStorage.getItem('rsdk_locale')?.substring(0, 2) || 'en';
   const translatedError = useTranslatedStaticPageError(
     'SELECT_YES_IF_YOU_WANT_TO_CONTINUE_WO_SIGN_IN',
@@ -54,7 +55,7 @@ export default function AreYouSureToContinueWithoutSignIn() {
       if (selectedOptionValue === 'yes') {
         getSdkConfig().then(sdkConfig => {
           if (sdkConfig?.isUnauthRouteToPega) {
-            history.push('/ua');
+            navigate('/ua');
             window.location.reload();
           } else {
             window.location.assign(
@@ -63,7 +64,7 @@ export default function AreYouSureToContinueWithoutSignIn() {
           }
         });
       } else {
-        history.push('/');
+        navigate('/');
       }
     } else {
       setErrorMsg(t('SELECT_YES_IF_YOU_WANT_TO_CONTINUE_WO_SIGN_IN'));
@@ -72,13 +73,14 @@ export default function AreYouSureToContinueWithoutSignIn() {
 
   return (
     <>
-      <AppHeader appname={t('CLAIM_CHILD_BENEFIT')} hasLanguageToggle />
+      <AppHeader appname={t('CLAIM_CHILD_BENEFIT')} />
       <div className='govuk-width-container'>
+        <LanguageToggle />
         <Button
           variant='backlink'
           onClick={e => {
             e.preventDefault();
-            history.goBack();
+            navigate(-1);
           }}
           key='areYouSureToContinueWoSignInBacklink'
           attributes={{ type: 'link' }}

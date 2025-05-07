@@ -1,4 +1,4 @@
 export default interface PaymentHistoryListData {
-    ExpectedCreditingDate: string,
-    Amount: number
+  ExpectedCreditingDate: string;
+  Amount: number;
 }

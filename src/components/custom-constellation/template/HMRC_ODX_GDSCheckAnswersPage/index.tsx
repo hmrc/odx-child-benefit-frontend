@@ -38,8 +38,7 @@ export default function HmrcOdxGdsCheckAnswersPage(props: HmrcOdxGdsCheckAnswers
   const arChildren = getPConnect().getChildren()[0].getPConnect().getChildren();
   const dfChildren = arChildren.map((kid, idx) => {
     kid.key = idx;
-    // @ts-ignore
-    return getPConnect().createComponent(kid.getPConnect().getRawMetadata());
+    return getPConnect().createComponent(kid.getPConnect().getRawMetadata(), '', 1, {});
   });
 
   // Create a ref to the mainer rendering container
@@ -58,18 +57,18 @@ export default function HmrcOdxGdsCheckAnswersPage(props: HmrcOdxGdsCheckAnswers
 
   function navigateToStep(event, stepId) {
     event.preventDefault();
-    // eslint-disable-next-line no-console
+
     console.log('navigation', stepId);
     const navigateToStepPromise = actions.navigateToStep(stepId, containerItemID);
 
     navigateToStepPromise
       .then(() => {
         //  navigate to step success handling
-        console.log('navigation successful'); // eslint-disable-line
+        console.log('navigation successful');
       })
       .catch(error => {
         // navigate to step failure handling
-        // eslint-disable-next-line no-console
+
         console.log('Change link Navigation failed', error);
       });
   }
@@ -134,7 +133,6 @@ export default function HmrcOdxGdsCheckAnswersPage(props: HmrcOdxGdsCheckAnswers
       // Access the DOM elements through the ref
       if (dfChildrenContainerRef.current && dfChildren && dfChildren.length > 0) {
         // Access the children of the container
-        // @ts-ignore
         const children = dfChildrenContainerRef.current.children;
         // Check if children contain the expected content
         if (children && children.length > 0) {
@@ -151,6 +149,7 @@ export default function HmrcOdxGdsCheckAnswersPage(props: HmrcOdxGdsCheckAnswers
     }, 0);
 
     return () => clearTimeout(timerId); // Cleanup the timer
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dfChildren]);
 
   return (

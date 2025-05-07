@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { bool, func, string } from 'prop-types';
 
 import HintTextComponent from '../../helpers/formatters/ParsedHtml';
 import FieldSet from '../FormGroup/FieldSet';
 import FormGroup from '../FormGroup/FormGroup';
+import { FieldSetContext } from '../../helpers/HMRCAppContext';
 
 function makeHintId(identifier) {
   return `${identifier}__assistiveHint`;
@@ -16,7 +17,17 @@ declare global {
 }
 
 export default function AutoComplete(props) {
-  const { optionList, instructionText, selectedValue, testId, helperText, errorText, id } = props;
+  const {
+    optionList,
+    instructionText,
+    selectedValue,
+    testId,
+    helperText,
+    errorText,
+    fieldId,
+    labelIsHeading
+  } = props;
+  const { isInFieldSet } = useContext(FieldSetContext);
   const inputClasses = `govuk-input ${errorText ? 'govuk-input--error' : ''}`.trim();
 
   useEffect(() => {
@@ -27,7 +38,7 @@ export default function AutoComplete(props) {
     ) {
       sessionStorage.setItem('isAutocompleteRendered', 'true');
       window.openregisterLocationPicker({
-        selectElement: document.getElementById(id),
+        selectElement: document.getElementById(fieldId),
         defaultValue: ''
       });
 
@@ -57,22 +68,26 @@ export default function AutoComplete(props) {
   };
 
   return (
-    <FormGroup {...props}>
+    <FormGroup
+      {...props}
+      extraLabelClasses={!isInFieldSet ? 'govuk-label--m' : ''}
+      labelIsHeading={labelIsHeading}
+    >
       {helperText && (
-        <div id={makeHintId(id)} className='govuk-hint'>
+        <div id={makeHintId(fieldId)} className='govuk-hint'>
           <HintTextComponent htmlString={helperText} />
         </div>
       )}
       {instructionText && (
-        <div id={makeHintId(id)} className='govuk-body'>
+        <div id={makeHintId(fieldId)} className='govuk-body'>
           <HintTextComponent htmlString={helperText} />
         </div>
       )}
       {arrOptions && arrOptions.length > 0 ? (
         <select
           className={inputClasses}
-          id={id}
-          name={id}
+          id={fieldId}
+          name={fieldId}
           value={getDefaultValue()}
           data-test-id={testId}
         >
@@ -82,6 +97,7 @@ export default function AutoComplete(props) {
           {arrOptions}
         </select>
       ) : (
+        // eslint-disable-next-line react/jsx-no-useless-fragment
         <></>
       )}
     </FormGroup>
@@ -99,5 +115,5 @@ AutoComplete.propTypes = {
   testId: string,
   name: string,
   labelIsHeading: bool,
-  id: string
+  fieldId: string
 };

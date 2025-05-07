@@ -1,1 +1,1 @@
-export { default } from './ViewContainer'
+export { default } from './ViewContainer';

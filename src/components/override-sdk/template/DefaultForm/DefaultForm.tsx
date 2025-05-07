@@ -34,7 +34,9 @@ export default function DefaultForm(props) {
   // defaultForm kids
   const arChildren = getPConnect().getChildren()[0].getPConnect().getChildren();
   let instructionText =
-    props.instructions === 'none' || !props.instructions ? '' : getPConnect().getLocalizedValue(props.instructions);
+    props.instructions === 'none' || !props.instructions
+      ? ''
+      : getPConnect().getLocalizedValue(props.instructions);
   // If the parent Default Form has instruction text passed through, append it here so that it is not
   // lost in nested default forms
   if (passedThroughInstructionText) {
@@ -220,7 +222,11 @@ export default function DefaultForm(props) {
           value={{
             displayAsSingleQuestion: configAlternateDesignSystem?.hidePageLabel,
             DFName: props.localeReference,
-            OverrideLabelValue: localizedVal(containerName,  'Assignment', '@BASECLASS!GENERIC!PYGENERICFIELDS'),
+            OverrideLabelValue: localizedVal(
+              containerName,
+              'Assignment',
+              '@BASECLASS!GENERIC!PYGENERICFIELDS'
+            ),
             instructionText:
               instructionExists && !singleQuestionPage
                 ? null

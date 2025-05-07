@@ -1,7 +1,6 @@
-// @ts-nocheck - TypeScript type checking to be added soon
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { render } from 'react-dom';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import StoreContext from '@pega/react-sdk-components/lib/bridge/Context/StoreContext';
 import createPConnectComponent from '@pega/react-sdk-components/lib/bridge/react_pconnect';
@@ -17,6 +16,7 @@ import { compareSdkPCoreVersions } from '@pega/react-sdk-components/lib/componen
 import AppHeader from '../../components/AppComponents/AppHeader';
 import AppFooter from '../../components/AppComponents/AppFooter';
 import LogoutPopup from '../../components/AppComponents/LogoutPopup';
+import LanguageToggle from '../../components/AppComponents/LanguageToggle';
 
 import StartPage from './StartPage';
 import ConfirmationPage from './ConfirmationPage';
@@ -30,38 +30,33 @@ import { getSdkComponentMap } from '@pega/react-sdk-components/lib/bridge/helper
 import localSdkComponentMap from '../../../sdk-local-component-map';
 import ShutterServicePage from '../../components/AppComponents/ShutterService/ShutterServicePage';
 import { getServiceShutteredStatus, triggerLogout } from '../../components/helpers/utils';
-import { TIMEOUT_115_SECONDS, TIMEOUT_13_MINUTES } from '../../components/helpers/constants';
 import checkAuthAndRedirectIfTens from '../../components/helpers/checkAuthAndRedirectIfTens';
 import C11nEnv from '@pega/pcore-pconnect-typedefs/interpreter/c11n-env';
-import languageToggle from '../../components/helpers/languageToggleHelper';
 import { loadBundles } from '../../components/helpers/languageToggleHelper';
 import { addDeviceIdCookie } from '../../components/helpers/cookie';
+import useAppLanguageToggle from '../../components/helpers/hooks/useAppLanguageToggle';
+import useHeartbeat from '../../components/helpers/hooks/useHeartbeat';
+import {
+  initTimeout,
+  staySignedIn
+} from '../../components/AppComponents/TimeoutPopup/timeOutUtils';
 
 declare const myLoadMashup: any;
 declare const PCore: any;
 
-/* Time out modal functionality */
-let applicationTimeout = null;
-// Sets default timeouts (13 mins for warning, 115 seconds for sign out after warning shows)
-let millisecondsTillSignout = TIMEOUT_115_SECONDS;
-let millisecondsTillWarning = TIMEOUT_13_MINUTES;
-
-// Clears any existing timeouts and starts the timeout for warning, after set time shows the modal and starts signout timer
-function initTimeout(setShowTimeoutModal) {
-  clearTimeout(applicationTimeout);
-
-  applicationTimeout = setTimeout(() => {
-    setShowTimeoutModal(true);
-  }, millisecondsTillWarning);
-}
-
 // Sends 'ping' to pega to keep session alive and then initiates the timout
-function staySignedIn(setShowTimeoutModal, refreshSignin = true) {
-  if (refreshSignin) {
-    PCore.getDataPageUtils().getDataAsync('D_ClaimantWorkAssignmentChBCases', 'root');
-  }
-  setShowTimeoutModal(false);
-  initTimeout(setShowTimeoutModal);
+export function staySignedInFunction(
+  setShowModal: Dispatch<SetStateAction<boolean>>,
+  refreshSignin = true
+) {
+  staySignedIn(
+    setShowModal,
+    'D_ClaimantWorkAssignmentChBCases',
+    undefined,
+    true,
+    refreshSignin,
+    false
+  );
 }
 /* ******************************* */
 
@@ -83,20 +78,11 @@ export default function ChildBenefitsClaim() {
   const [assignmentPConn, setAssignmentPConn] = useState(null);
   const [isCreateCaseBlocked, setIsCreateCaseBlocked] = useState(false);
   const [rootProps, setRootProps] = useState({});
-  const { i18n } = useTranslation();
 
-  useEffect(() => {
-    window.addEventListener('APP_LANGUAGE_TOGGLE', e =>
-      languageToggle(e.detail.language, i18n, ['HMRC-CHB-WORK-CLAIM!CASE!CLAIM'])
-    );
-    return () => {
-      window.removeEventListener('APP_LANGUAGE_TOGGLE', e =>
-        languageToggle(e.detail.language, i18n, ['HMRC-CHB-WORK-CLAIM!CASE!CLAIM'])
-      );
-    };
-  }, []);
+  useAppLanguageToggle(['HMRC-CHB-WORK-CLAIM!CASE!CLAIM']);
+  useHeartbeat(setShowTimeoutModal);
 
-  const history = useHistory();
+  const navigate = useNavigate();
 
   function resetAppDisplay() {
     setShowStartPage(false);
@@ -170,7 +156,7 @@ export default function ChildBenefitsClaim() {
     useState(false);
 
   function doRedirectDone() {
-    history.replace('/');
+    navigate('/');
     // appName and mainRedirect params have to be same as earlier invocation
     loginIfNecessary({
       appName: 'ChB',
@@ -216,12 +202,12 @@ export default function ChildBenefitsClaim() {
 
   function beginClaim() {
     // Added to ensure that clicking begin claim restarts timeout
-    staySignedIn(setShowTimeoutModal);
+    staySignedInFunction(setShowTimeoutModal);
     displayStartPage();
     setIsCreateCaseBlocked(false);
   }
   function returnToPortalPage() {
-    staySignedIn(setShowTimeoutModal);
+    staySignedInFunction(setShowTimeoutModal);
     setServiceNotAvailable(false);
 
     displayUserPortal();
@@ -262,9 +248,11 @@ export default function ChildBenefitsClaim() {
   function fetchInProgressClaimsData(isSaveComeBackClicked = false) {
     setLoadingInProgressClaims(true);
     let inProgressClaimsData: any = [];
+    const options = { invalidateCache: true };
+    const containerItemID = PCore.getContainerUtils().getActiveContainerItemName('app/primary');
 
     PCore.getDataPageUtils()
-      .getDataAsync('D_ClaimantWorkAssignmentChBCases', 'root')
+      .getDataAsync('D_ClaimantWorkAssignmentChBCases', 'root', {}, {}, {}, options)
       .then(resp => {
         resp = resp.data.slice(0, 10);
         inProgressClaimsData = resp;
@@ -276,10 +264,9 @@ export default function ChildBenefitsClaim() {
           // Here we are calling this close container because of the fact that above
           // D_ClaimantWorkAssignmentChBCases API is getting excuted as last call but we want to make
           // close container call as the very last one.
-          PCore.getContainerUtils().closeContainerItem(
-            PCore.getContainerUtils().getActiveContainerItemContext('app/primary'),
-            { skipDirtyCheck: true }
-          );
+          PCore.getContainerUtils().closeContainerItem(containerItemID, {
+            skipDirtyCheck: true
+          });
         }
       });
   }
@@ -397,6 +384,9 @@ export default function ChildBenefitsClaim() {
       PCore.getConstants().PUB_SUB_EVENTS.CASE_EVENTS.ASSIGNMENT_OPENED,
       () => {
         displayPega();
+        setTimeout(() => {
+          PCore.getPubSubUtils().publish('callLocalActionSilently', {});
+        }, 1000);
       },
       'continueAssignment'
     );
@@ -529,19 +519,9 @@ export default function ChildBenefitsClaim() {
       establishPCoreSubscriptions();
       setShowAppName(true);
 
-      // Fetches timeout length config
-      getSdkConfig()
-        .then(sdkConfig => {
-          if (sdkConfig.timeoutConfig.secondsTilWarning)
-            millisecondsTillWarning = sdkConfig.timeoutConfig.secondsTilWarning * 1000;
-          if (sdkConfig.timeoutConfig.secondsTilLogout)
-            millisecondsTillSignout = sdkConfig.timeoutConfig.secondsTilLogout * 1000;
-        })
-        .finally(() => {
-          // Subscribe to any store change to reset timeout counter
-          PCore.getStore().subscribe(() => staySignedIn(setShowTimeoutModal, false));
-          initTimeout(setShowTimeoutModal);
-        });
+      // Subscribe to any store change to reset timeout counter
+      PCore.getStore().subscribe(() => staySignedInFunction(setShowTimeoutModal, false));
+      initTimeout(setShowTimeoutModal, false, true, false);
 
       PCore.getEnvironmentInfo().setLocale(sessionStorage.getItem('rsdk_locale') || 'en_GB');
 
@@ -553,7 +533,6 @@ export default function ChildBenefitsClaim() {
       await addDeviceIdCookie();
 
       setLoadingSubmittedClaims(true);
-      // @ts-ignore
       PCore.getDataPageUtils()
         .getDataAsync('D_ClaimantSubmittedChBCases', 'root', { OperatorId: operatorId })
         .then(resp => {
@@ -602,9 +581,7 @@ export default function ChildBenefitsClaim() {
         sISOTime = sISOTime.replace(regex, '');
         // Service package to use custom auth with Basic
         const sB64 = window.btoa(
-          `${sdkConfigAuth.mashupUserIdentifier}:${window.atob(
-            sdkConfigAuth.mashupPassword
-          )}:${sISOTime}`
+          `${sdkConfigAuth.mashupUserIdentifier}:${window.atob(sdkConfigAuth.mashupPassword)}:${sISOTime}`
         );
         sdkSetAuthHeader(`Basic ${sB64}`);
       }
@@ -654,19 +631,13 @@ export default function ChildBenefitsClaim() {
   }, []);
 
   function handleSignout() {
-    if (bShowPega) {
+    const isMidClaimsJourney: boolean = bShowPega;
+    if (isMidClaimsJourney) {
       setShowSignoutModal(true);
     } else {
       triggerLogout();
     }
   }
-
-  const handleStaySignIn = e => {
-    e.preventDefault();
-    setShowSignoutModal(false);
-    // Extends manual signout popup 'stay signed in' to reset the automatic timeout timer also
-    staySignedIn(setShowTimeoutModal);
-  };
 
   const checkShuttered = (status: boolean) => {
     setShutterServicePage(status);
@@ -725,19 +696,18 @@ export default function ChildBenefitsClaim() {
     <>
       <TimeoutPopup
         show={showTimeoutModal}
-        staySignedinHandler={() => staySignedIn(setShowTimeoutModal)}
+        staySignedinHandler={() => staySignedInFunction(setShowTimeoutModal)}
         signoutHandler={() => triggerLogout()}
-        millisecondsTillSignout={millisecondsTillSignout}
         isAuthorised
       />
 
       <AppHeader
         handleSignout={handleSignout}
         appname={t('CLAIM_CHILD_BENEFIT')}
-        hasLanguageToggle
-        isPegaApp={bShowPega}
+        serviceLink={window.location.href}
       />
       <div className='govuk-width-container'>
+        <LanguageToggle />
         {serviceNotAvailable ? (
           <ServiceNotAvailable returnToPortalPage={returnToPortalPage} />
         ) : (
@@ -751,7 +721,7 @@ export default function ChildBenefitsClaim() {
         show={showSignoutModal && !showTimeoutModal}
         hideModal={() => setShowSignoutModal(false)}
         handleSignoutModal={triggerLogout}
-        handleStaySignIn={handleStaySignIn}
+        handleStaySignIn={() => staySignedInFunction(setShowSignoutModal)}
       />
       <AppFooter />
     </>

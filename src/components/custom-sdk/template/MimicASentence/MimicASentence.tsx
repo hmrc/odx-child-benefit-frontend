@@ -9,12 +9,12 @@ import PropTypes from 'prop-types';
 export default function HmrcOdxMimicASentence(props) {
   const { children } = props;
 
-  const [formElms, setFormElms] = useState<Array<React.ReactElement>>([]);
+  const [formElms, setFormElms] = useState<React.ReactElement[]>([]);
 
   registerNonEditableField();
 
   useEffect(() => {
-    const elms:Array<React.ReactElement> = [];
+    const elms: React.ReactElement[] = [];
     const region = children[0] ? children[0].props.getPConnect() : null;
     if (region?.getChildren()) {
       region.getChildren().forEach(child => {
@@ -27,23 +27,23 @@ export default function HmrcOdxMimicASentence(props) {
 
   return (
     <p className='govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-6'>
-        {formElms.map((field, index) => {
-          const key = `${field.props.inheritedProps.find(prop => prop.prop === "label").value.replace(/ /g,"_")}_${index}`;
+      {formElms.map((field, index) => {
+        const key = `${field.props.inheritedProps.find(prop => prop.prop === 'label').value.replace(/ /g, '_')}_${index}`;
 
-          const formattedValue = field.props.DateTimeFormat
-            ? new Date(field.props.value).toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-              })
-            : field.props.value;
-          return <Fragment key={key}>{formattedValue} </Fragment>;
-        })}
-      </p>
+        const formattedValue = field.props.DateTimeFormat
+          ? new Date(field.props.value).toLocaleDateString('en-GB', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric'
+            })
+          : field.props.value;
+        return <Fragment key={key}>{formattedValue} </Fragment>;
+      })}
+    </p>
   );
 }
 
 HmrcOdxMimicASentence.propTypes = {
   getPConnect: PropTypes.func.isRequired,
-  children: PropTypes.arrayOf(PropTypes.node).isRequired,
+  children: PropTypes.arrayOf(PropTypes.node).isRequired
 };

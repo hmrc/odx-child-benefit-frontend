@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { loginIfNecessary, sdkIsLoggedIn } from '@pega/auth/lib/sdk-auth-manager';
 import AppHeader from '../../components/AppComponents/AppHeader';
 import AppFooter from '../../components/AppComponents/AppFooter';
@@ -12,16 +12,17 @@ import MainWrapper from '../../components/BaseComponents/MainWrapper';
 // import { Link } from 'react-router-dom';
 import TimeoutPopup from '../../components/AppComponents/TimeoutPopup';
 import { initTimeout } from '../../components/AppComponents/TimeoutPopup/timeOutUtils';
+import LanguageToggle from '../../components/AppComponents/LanguageToggle';
 
 export default function ChildBenefitHub() {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [showTimeoutModal, setShowTimeoutModal] = useState(false);
   const { t } = useTranslation();
   const { referrerURL, hmrcURL } = useHMRCExternalLinks();
 
   registerServiceName(t('CHB_HOMEPAGE_HEADING'));
   const onRedirectDone = () => {
-    history.replace('/home');
+    navigate('/home');
     // appName and mainRedirect params have to be same as earlier invocation
     loginIfNecessary({ appName: 'ChB', mainRedirect: true });
   };
@@ -43,7 +44,6 @@ export default function ChildBenefitHub() {
   return sdkIsLoggedIn() ? (
     <>
       <AppHeader
-        hasLanguageToggle
         betafeedbackurl={`${hmrcURL}contact/beta-feedback?service=463&referrerUrl=${window.location}`}
         appname={t('CHB_HOMEPAGE_HEADING')}
         handleSignout={handleSignout}
@@ -58,10 +58,9 @@ export default function ChildBenefitHub() {
         }}
         signoutHandler={triggerLogout}
         isAuthorised
-        signoutButtonText='Sign out'
-        staySignedInButtonText='Stay signed in'
       />
       <div className='govuk-width-container'>
+        <LanguageToggle />
         <MainWrapper>
           <h1 className='govuk-heading-xl'>{t('CHB_HOMEPAGE_HEADING')}</h1>
           <h2 className='govuk-heading-m'>{t('CHB_HOMEPAGE_MAKING_CLAIM_SUBHEADING')}</h2>
@@ -111,7 +110,7 @@ export default function ChildBenefitHub() {
             </a>
           </p>
           <p>
-            {/* TODO: Fix issue with ConstellationJS bootstrap on route change, 
+            {/* TODO: Fix issue with ConstellationJS bootstrap on route change,
                 temporary fix provided for BUG-8996 (it is blocking US-14576-1)
                 <Link to='/view-proof-entitlement' className='govuk-link'>
                   {t('CHB_HOMEPAGE_VIEW_PROOF_OF_ENTITLEMENT_LINK')}
@@ -132,6 +131,7 @@ export default function ChildBenefitHub() {
       <AppFooter />
     </>
   ) : (
+    // eslint-disable-next-line react/jsx-no-useless-fragment
     <></>
   );
 }

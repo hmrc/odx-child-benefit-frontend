@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import AppHeader from '../../../components/AppComponents/AppHeader';
 import AppFooter from '../../../components/AppComponents/AppFooter';
 import { useTranslation } from 'react-i18next';
@@ -9,10 +9,11 @@ import '../../../../assets/css/appStyles.scss';
 import StaticPageErrorSummary from '../ErrorSummary';
 import setPageTitle from '../../../components/helpers/setPageTitleHelpers';
 import useTranslatedStaticPageError from '../../../components/helpers/hooks/useTranslatedStaticPageError';
+import LanguageToggle from '../../../components/AppComponents/LanguageToggle';
 
 export default function RecentlyClaimedChildBenefit() {
   const { t } = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState('');
   const errorHref = `#serviceType`;
   const lang = sessionStorage.getItem('rsdk_locale')?.substring(0, 2) || 'en';
@@ -67,13 +68,13 @@ export default function RecentlyClaimedChildBenefit() {
       const selectedOptionValue = selectedOption.getAttribute('value');
       switch (selectedOptionValue) {
         case 'makeanewclaim':
-          history.push('/sign-in-to-government-gateway');
+          navigate('/sign-in-to-government-gateway');
           break;
         case 'addchildtoexistingclaim':
-          history.push('/sign-in-to-government-gateway');
+          navigate('/sign-in-to-government-gateway');
           break;
         case 'checkonprogressofclaim':
-          history.push('/check-on-claim');
+          navigate('/check-on-claim');
           break;
         case 'viewmyproofofentitlement':
           window.location.assign(
@@ -97,8 +98,9 @@ export default function RecentlyClaimedChildBenefit() {
   }
   return (
     <>
-      <AppHeader appname={t('CLAIM_CHILD_BENEFIT')} hasLanguageToggle />
+      <AppHeader appname={t('CLAIM_CHILD_BENEFIT')} />
       <div className='govuk-width-container'>
+        <LanguageToggle />
         <MainWrapper>
           <StaticPageErrorSummary errorSummary={translatedError} linkHref={errorHref} />
           <form>

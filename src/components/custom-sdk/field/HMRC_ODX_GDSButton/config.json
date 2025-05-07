@@ -10,7 +10,7 @@
   "type": "Field",
   "subtype": "Text",
   "icon": "images/pz-url-active.svg",
-   "properties": [
+  "properties": [
     {
       "name": "label",
       "label": "Field label",

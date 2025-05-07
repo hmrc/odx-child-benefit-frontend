@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-wait-for-multiple-assertions */
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
@@ -22,10 +23,9 @@ jest.mock('../../components/AppComponents/AppHeader', () => () => <header />);
 
 jest.mock('../../components/AppComponents/AppFooter', () => () => <footer />);
 
-jest.mock('../../components/AppComponents/PaymentHistoryComponents/ServiceNotAvailableTryAgain', () => () => 
-  <div data-test-id='error-div'>
-    Error Page
-  </div>
+jest.mock(
+  '../../components/AppComponents/PaymentHistoryComponents/ServiceNotAvailableTryAgain',
+  () => () => <div data-test-id='error-div'>Error Page</div>
 );
 
 jest.mock('@pega/auth/lib/sdk-auth-manager', () => ({
@@ -161,7 +161,7 @@ describe('PaymentHistory Component', () => {
   });
 
   test('Renders payment table if payment list length > 0', async () => {
-    render(<PaymentHistory/>);
+    render(<PaymentHistory />);
 
     mockGetPageDataAsync.mockResolvedValueOnce(mockApiDataOptedIn);
 
@@ -176,9 +176,9 @@ describe('PaymentHistory Component', () => {
     const table = await screen.findByTestId('payment-history-table');
     expect(table).toBeInTheDocument();
   });
-  
+
   test('Renders next payment component when user has opted in', async () => {
-    render(<PaymentHistory/>);
+    render(<PaymentHistory />);
 
     mockGetPageDataAsync.mockResolvedValueOnce(mockApiDataOptedIn);
 
@@ -195,10 +195,10 @@ describe('PaymentHistory Component', () => {
   });
 
   test('Renders error page when API fails', async () => {
-    render(<PaymentHistory/>);
-    
+    render(<PaymentHistory />);
+
     mockGetPageDataAsync.mockResolvedValue({
-      IsApiError: true
+      IsAPIError: true
     });
 
     const event = new Event('SdkConstellationReady');

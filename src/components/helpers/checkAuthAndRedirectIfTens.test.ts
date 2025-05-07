@@ -31,7 +31,6 @@ describe('checkAuthAndRedirectIfTens', () => {
         IsNormalAuthentication: false,
         PostAuthAction: 'TENS'
       });
-      jest.spyOn(window.localStorage, 'setItem');
 
       const result = await checkAuthAndRedirectIfTens();
 

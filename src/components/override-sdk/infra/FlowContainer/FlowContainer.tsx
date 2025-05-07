@@ -49,8 +49,6 @@ export const FlowContainer = props => {
 
   const containerName = assignmentNames && assignmentNames.length > 0 ? assignmentNames[0] : '';
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-  const [checkSvg, setCheckSvg] = useState('');
   const [buildName, setBuildName] = useState('');
   const [bShowConfirm, setShowConfirm] = useState(false);
 
@@ -112,7 +110,7 @@ export const FlowContainer = props => {
     const ourPConn = getPConnect();
 
     let bHasAssignments = false;
-    const assignmentsList: Array<any> = ourPConn.getValue(
+    const assignmentsList: any[] = ourPConn.getValue(
       pCoreConstants.CASE_INFO.D_CASE_ASSIGNMENTS_RESULTS,
       ''
     );
@@ -126,7 +124,7 @@ export const FlowContainer = props => {
     if (PCoreVersion?.includes('8.7') || isEmbedded) {
       const thisOperator = PCore.getEnvironmentInfo().getOperatorIdentifier();
       for (const assignment of assignmentsList) {
-        if (assignment['assigneeInfo']['ID'] === thisOperator) {
+        if (assignment.assigneeInfo.ID === thisOperator) {
           bAssignmentsForThisOperator = true;
         }
       }
@@ -148,6 +146,7 @@ export const FlowContainer = props => {
   }
 
   // From SDK-WC updateSelf - so do this in useEffect that's run only when the props change...
+
   useEffect(() => {
     setBuildName(getBuildName());
 

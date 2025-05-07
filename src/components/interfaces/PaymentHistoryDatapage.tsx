@@ -1,11 +1,11 @@
 import PaymentHistoryListData from './PaymentHistoryListData';
 
 export default interface PaymentHistoryDatapage {
-  IsApiError?: boolean;
+  IsAPIError?: boolean;
   HasAward?: boolean;
   HasPreviousAward?: boolean;
   IsPaymentOptedOut: boolean;
-  PaymentList: Array<PaymentHistoryListData>;
+  PaymentList: PaymentHistoryListData[];
   Claimant: {
     pyFirstName: string;
     pyFullName: string;

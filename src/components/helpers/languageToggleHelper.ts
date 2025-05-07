@@ -2,7 +2,7 @@ import { i18n } from 'i18next';
 import setPageTitle from './setPageTitleHelpers';
 import dayjs from 'dayjs';
 
-const languageToggle = async (lang: string, i18nRef: i18n, dataBundles: Array<string> = []) => {
+const languageToggle = async (lang: string, i18nRef: i18n, dataBundles: string[] = []) => {
   sessionStorage.setItem('rsdk_locale', `${lang}_GB`);
   dayjs.locale(lang);
   i18nRef.changeLanguage(lang).then(() => {

@@ -11,6 +11,7 @@ export default {
   component: HmrcOdxGdsButton
 };
 
+// eslint-disable-next-line storybook/prefer-pascal-case
 export const baseHmrcOdxGdsButton = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [value, setValue] = useState(configProps.value);
@@ -32,20 +33,26 @@ export const baseHmrcOdxGdsButton = () => {
             updateFieldValue: (propName, theValue) => {
               setValue(theValue);
             },
-            triggerFieldChange: () => {/* nothing */}
+            triggerFieldChange: () => {
+              /* nothing */
+            }
           };
         },
-        ignoreSuggestion: () => {/* nothing */},
-        acceptSuggestion: () => {/* nothing */},
-        setInheritedProps: () => {/* nothing */},
-        resolveConfigProps: () => {/* nothing */}
+        ignoreSuggestion: () => {
+          /* nothing */
+        },
+        acceptSuggestion: () => {
+          /* nothing */
+        },
+        setInheritedProps: () => {
+          /* nothing */
+        },
+        resolveConfigProps: () => {
+          /* nothing */
+        }
       };
     }
   };
 
-  return (
-    <>
-      <HmrcOdxGdsButton {...props} />
-    </>
-  );
+  return <HmrcOdxGdsButton {...props} />;
 };

@@ -260,11 +260,9 @@ export const BaseHmrcOdxGdsTaskListTemplate = () => {
   });
 
   return (
-    <>
-      <HmrcOdxGdsTaskListTemplate {...props}>
-        {regionAChildren}
-        {regionBChildren}
-      </HmrcOdxGdsTaskListTemplate>
-    </>
+    <HmrcOdxGdsTaskListTemplate {...props}>
+      {regionAChildren}
+      {regionBChildren}
+    </HmrcOdxGdsTaskListTemplate>
   );
 };

@@ -7,7 +7,7 @@ import '../../../../assets/css/appStyles.scss';
 export default function Modal(props) {
   const { handleClose, show, children, id = 'modal-id' } = props;
   const showHideClassName = show
-    ? 'govuk-!-display-block hmrc-timeout-dialog'
+    ? 'govuk-!-display-block hmrc-timeout-dialog  '
     : 'govuk-!-display-none';
   const { t } = useTranslation();
 
@@ -37,15 +37,13 @@ export default function Modal(props) {
               id={id}
               aria-labelledby='hmrc-timeout-heading hmrc-timeout-message'
             >
-              <section>
-                {children}
-                {handleClose && (
-                  <a className='govuk-link signout-modal' href='#' onClick={handleCloseOfModal}>
-                    {t('CLOSE')}
-                    <span className='govuk-visually-hidden'> {t('SIGN_OUT_MESSAGE')}</span>
-                  </a>
-                )}
-              </section>
+              {children}
+              {handleClose && (
+                <a className='govuk-link signout-modal' href='#' onClick={handleCloseOfModal}>
+                  {t('CLOSE')}
+                  <span className='govuk-visually-hidden'> {t('SIGN_OUT_MESSAGE')}</span>
+                </a>
+              )}
             </div>
           </FocusTrap>
         </>

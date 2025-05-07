@@ -17,7 +17,7 @@
       "label": "stepId for Changelink",
       "required": false,
       "visibility": "$this.ShowChangeLink"
-    },    
+    },
     {
       "format": "SELECT",
       "name": "autocomplete",

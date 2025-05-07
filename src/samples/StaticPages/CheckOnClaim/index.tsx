@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import AppHeader from '../../../components/AppComponents/AppHeader';
 import AppFooter from '../../../components/AppComponents/AppFooter';
 import { useTranslation } from 'react-i18next';
@@ -9,10 +9,11 @@ import setPageTitle from '../../../components/helpers/setPageTitleHelpers';
 import RadioButtons from '../../../components/BaseComponents/RadioButtons/RadioButtons';
 import StaticPageErrorSummary from '../ErrorSummary';
 import useTranslatedStaticPageError from '../../../components/helpers/hooks/useTranslatedStaticPageError';
+import LanguageToggle from '../../../components/AppComponents/LanguageToggle';
 
 export default function CheckOnClaim() {
   const { t } = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const lang = sessionStorage.getItem('rsdk_locale')?.substring(0, 2) || 'en';
   const [errorMsg, setErrorMsg] = useState('');
   const errorHref = `#typeOfClaimCheck`;
@@ -48,7 +49,7 @@ export default function CheckOnClaim() {
 
       switch (selectedOptionValue) {
         case 'viewmysavedorsubmittedclaims':
-          history.push('/');
+          navigate('/');
           break;
         case 'checkwhenicanexpectareply':
           window.location.assign(
@@ -65,13 +66,14 @@ export default function CheckOnClaim() {
 
   return (
     <>
-      <AppHeader appname={t('CLAIM_CHILD_BENEFIT')} hasLanguageToggle />
+      <AppHeader appname={t('CLAIM_CHILD_BENEFIT')} />
       <div className='govuk-width-container'>
+        <LanguageToggle />
         <Button
           variant='backlink'
           onClick={e => {
             e.preventDefault();
-            history.goBack();
+            navigate(-1);
           }}
           key='CheckOnClaimBacklink'
           attributes={{ type: 'link' }}

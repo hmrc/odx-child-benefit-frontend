@@ -4,14 +4,12 @@ import StyledHmrcOdxGdsTaskListWrapper from './styles';
 import type { PConnProps } from '@pega/react-sdk-components/lib/types/PConnProps';
 import PropTypes from 'prop-types';
 
-interface HmrcOdxGdsTaskListProps extends PConnProps {
-  taskList: {};
-}
+interface HmrcOdxGdsTaskListProps extends PConnProps {}
 
 // props passed in combination of props from property panel (config.json) and run time props from Constellation
 // any default values in config.pros should be set in defaultProps at bottom of this file
 export default function HmrcOdxGdsTaskList(props: HmrcOdxGdsTaskListProps) {
-  const { taskList, getPConnect } = props;
+  const { getPConnect } = props;
 
   let globalTaskList = [];
   const { t } = useTranslation();
@@ -23,18 +21,22 @@ export default function HmrcOdxGdsTaskList(props: HmrcOdxGdsTaskListProps) {
 
     const fetchTaskList = async () => {
       try {
-        // @ts-ignore
-        const response = await PCore.getDataPageUtils().getDataAsync('D_CaseTaskList', context); // TODO make configurable.
-        // @ts-ignore
-        taskList = response.data;
+        const response = await PCore.getDataPageUtils().getDataAsync(
+          'D_CaseTaskList',
+          context,
+          {},
+          {},
+          {}
+        ); // TODO make configurable.
+        const caseTaskList = response.data;
 
-        if (Array.isArray(taskList)) {
-          globalTaskList = globalTaskList.concat(taskList);
+        if (Array.isArray(caseTaskList)) {
+          globalTaskList = globalTaskList.concat(caseTaskList);
         } else {
-          globalTaskList.push(taskList);
+          globalTaskList.push(caseTaskList);
         }
 
-        setData(taskList);
+        setData(caseTaskList);
       } catch (error) {
         // Handle error
         return []; // or throw error based on your requirement
@@ -68,7 +70,7 @@ export default function HmrcOdxGdsTaskList(props: HmrcOdxGdsTaskListProps) {
                     >
                       {task.TaskLabel}
 
-                      {/* { 
+                      {/* {
                       TODO
                       Update property - text - selectedTask configurable?
                       Submit assignment} */}
@@ -99,6 +101,5 @@ export default function HmrcOdxGdsTaskList(props: HmrcOdxGdsTaskListProps) {
 }
 
 HmrcOdxGdsTaskList.propTypes = {
-  taskList: PropTypes.instanceOf(Object),
   getPConnect: PropTypes.func.isRequired
 };

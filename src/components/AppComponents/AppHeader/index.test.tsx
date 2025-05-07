@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, waitFor, act } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
+import '@testing-library/jest-dom';
 import AppHeader from '.';
 import * as rdd from 'react-device-detect';
 
@@ -28,9 +28,7 @@ describe('<AppHeader />', () => {
   // set defaults
   const props = {
     handleSignout: jest.fn(),
-    appname: 'Test App',
-    hasLanguageToggle: true,
-    languageToggleCallback: jest.fn()
+    appname: 'Test App'
   };
 
   test('Renders the AppHeader component', async () => {
@@ -38,6 +36,7 @@ describe('<AppHeader />', () => {
     await act(async () => {
       ({ container } = render(<AppHeader {...props} />));
     });
+    // eslint-disable-next-line testing-library/no-node-access
     const appHeaderElement = await waitFor(() => container.querySelector('header'));
 
     expect(appHeaderElement).toBeInTheDocument();
@@ -55,6 +54,7 @@ describe('<AppHeader />', () => {
     });
 
     // Assuming CustomView renders a div, we can check if the div exists
+    // eslint-disable-next-line testing-library/no-node-access
     const customViewElement = await waitFor(() => container.querySelector('header'));
 
     // Check if the condition is applied correctly
@@ -74,6 +74,7 @@ describe('<AppHeader />', () => {
     });
 
     // Assuming CustomView renders a div, we can check if the div exists
+    // eslint-disable-next-line testing-library/no-node-access
     const customViewElement = await waitFor(() => container.querySelector('header'));
 
     // Check if the condition is applied correctly

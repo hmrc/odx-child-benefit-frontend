@@ -4,13 +4,23 @@ import handleEvent from '@pega/react-sdk-components/lib/components/helpers/event
 import useIsOnlyField from '../../../helpers/hooks/QuestionDisplayHooks';
 import ReadOnlyDisplay from '../../../BaseComponents/ReadOnlyDisplay/ReadOnlyDisplay';
 import GDSCheckAnswers from '../../../BaseComponents/CheckAnswer/index';
-import { ReadOnlyDefaultFormContext } from '../../../helpers/HMRCAppContext';
+import { FieldSetContext, ReadOnlyDefaultFormContext } from '../../../helpers/HMRCAppContext';
 import { checkStatus } from '../../../helpers/utils';
 
 declare const PCore: any;
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export default function Group(props) {
-  const { children, heading, instructions, readOnly, getPConnect, helperText, placeholder } = props;
+  const {
+    children,
+    heading,
+    instructions,
+    readOnly,
+    getPConnect,
+    helperText,
+    placeholder,
+    fieldId
+  } = props;
 
   const thePConn = getPConnect();
   const actionsApi = thePConn.getActionsApi();
@@ -18,9 +28,6 @@ export default function Group(props) {
 
   const { isOnlyField } = useIsOnlyField(props.displayOrder);
   const { hasBeenWrapped } = useContext(ReadOnlyDefaultFormContext);
-  const formattedContext = thePConn.options.pageReference
-    ? thePConn.options.pageReference.split('.').pop()
-    : '';
 
   // Doesn't seem that state change on children (checkboxes) causes refresh on the containing group,
   // working around with this for now
@@ -134,7 +141,7 @@ export default function Group(props) {
         if (!firstOptionPropertyName) {
           firstOptionPropertyName = formattedPropertyName;
         }
-        const fieldId = `${formattedContext}-${firstOptionPropertyName}`;
+        // const fieldId = `${formattedContext}-${firstOptionPropertyName}`;
         childPConnect.setStateProps({ fieldId });
 
         // Register additonal props used for exclusive field handling (used in CheckBox overidden component)
@@ -182,7 +189,7 @@ export default function Group(props) {
     }
 
     return (
-      <>
+      <FieldSetContext.Provider value={{ isInFieldSet: true }}>
         <FieldSet
           hintText={instructions}
           label={heading}
@@ -192,7 +199,7 @@ export default function Group(props) {
         >
           {children}
         </FieldSet>
-      </>
+      </FieldSetContext.Provider>
     );
   }
   return null;

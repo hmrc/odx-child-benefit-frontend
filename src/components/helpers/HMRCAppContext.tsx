@@ -20,4 +20,7 @@ const ReadOnlyDefaultFormContext = createContext({
   hasBeenWrapped: false
 });
 
+// Used to add bold CSS class when the autocomplete form label is not displayed in a set of inputs
+export const FieldSetContext = createContext({ isInFieldSet: false });
+
 export { DefaultFormContext, ReadOnlyDefaultFormContext, ErrorMsgContext };
