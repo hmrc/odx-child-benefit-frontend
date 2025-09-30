@@ -31,7 +31,8 @@ import HmrcOdxSectionBased from './src/components/custom-sdk/template/HMRC_ODX_s
 import RichText from './src/components/override-sdk/field/RichText/';
 import HmrcOdxGdsCheckAnswersPage from './src/components/custom-sdk/template/HMRC_ODX_GDSCheckAnswersPage/';
 import SimpleTableManual from './src/components/override-sdk/template/SimpleTableManual/';
-/*import end - DO NOT REMOVE*/
+import HmrcOdxExtendedDate from './src/components/custom-sdk/template/HMRC_ODX_ExtendedDate/';
+/* import end - DO NOT REMOVE */
 
 // localSdkComponentMap is the JSON object where we'll store the components that are
 // found locally. If not found here, we'll look in the Pega-provided component map
@@ -48,7 +49,6 @@ const localSdkComponentMap = {
   Assignment: InfraAssignment,
   AssignmentCard: InfraAssignmentCard,
   ActionButtons: InfraActionButtons,
-  Assignment: InfraAssignment,
   FlowContainer: InfraFlowContainer,
   HMRC_ODX_PhoneNumber: FieldPhone,
   View: InfraView,
@@ -57,18 +57,19 @@ const localSdkComponentMap = {
   Group: TemplateFieldGroupTemplate,
   Details: TemplateDetails,
   ViewContainer: InfraViewContainer,
-  RichText: RichText,
+  RichText,
   HMRC_ODX_GDSInfoPanel: HmrcOdxGdsInfoPanel,
   HMRC_ODX_GDSSummaryCard: HmrcOdxGdsSummaryCard,
   HMRC_ODX_GDSButton: HmrcOdxGdsButton,
   HMRC_ODX_ComplexQuestionExplanation: HmrcOdxComplexQuestionExplanation,
-  AutoComplete: AutoComplete,
+  AutoComplete,
   HMRC_ODX_GDSTextPresentation: HmrcOdxGdsTextPresentation,
   HMRC_ODX_GDSTaskListTemplate: HmrcOdxGdsTaskListTemplate,
   HMRC_ODX_sectionBased: HmrcOdxSectionBased,
   HMRC_ODX_GDSCheckAnswersPage: HmrcOdxGdsCheckAnswersPage,
-  SimpleTableManual: SimpleTableManual
-  /*map end - DO NOT REMOVE*/
+  SimpleTableManual,
+  HMRC_ODX_ExtendedDate: HmrcOdxExtendedDate
+  /* map end - DO NOT REMOVE */
 };
 
 export default localSdkComponentMap;

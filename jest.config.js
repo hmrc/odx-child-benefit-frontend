@@ -1,4 +1,3 @@
-// eslint-disable-next-line strict
 module.exports = {
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/src'],
@@ -7,8 +6,9 @@ module.exports = {
     '^.+\\.(t|j)sx?$': 'ts-jest'
   },
   testMatch: ['**/?(*.)+(test).[jt]s?(x)'],
-  setupFilesAfterEnv: ['<rootDir>/tests/setupTests.ts'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setupTests.ts', '@testing-library/jest-dom'],
   coverageDirectory: 'tests/coverage',
-  transformIgnorePatterns: ['node_modules/(?!@pega)'],
-  moduleNameMapper: { '\\.scss$': '<rootDir>/empty-module.js' }
+  // transformIgnorePatterns: ['node_modules/(?!(gds-react-component-library)/)'],
+  transformIgnorePatterns: ['node_modules/(?!@pega|gds-react-component-library)'],
+  moduleNameMapper: { '\\.scss$': '<rootDir>/tests/mocks/scss-mock.js' }
 };
