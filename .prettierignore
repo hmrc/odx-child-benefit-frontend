@@ -1,0 +1,10 @@
+**/.git
+**/.github
+**/.vscode
+**/.svn
+**/.hg
+**/*.md
+**/*.svg
+**/assets
+package.json
+sdk-config.json
