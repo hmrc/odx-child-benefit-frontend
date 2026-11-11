@@ -20,6 +20,7 @@ The SDK-R v23.1.10 and v8.8.20 releases allow React SDK users to to take advanta
 
 <br />
 
+
 This
 [**React SDK updates**](https://docs.pega.com/bundle/constellation-sdk/page/constellation-sdks/sdks/react-sdk-updates.html) page provides details
 about all of the React SDK releases.
